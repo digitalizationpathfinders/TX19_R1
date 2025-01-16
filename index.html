@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Title</title>
+    <link rel="stylesheet" href="styles/base.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="brand">
+                <img src="https://www.canada.ca/etc/designs/canada/wet-boew/assets/sig-blk-en.svg" alt="Government of Canada">
+            </div>
+          
+            <a href="#" class="language-switch">Français</a>
+        </div>
+    </header>
+
+    <main class="stepper">
+        <h1>Main Title</h1>
+        
+        <!-- Step -->
+        <section class="active step" id="step-0">
+            <div class="step-header">
+                <div class="step-number">
+                    <span class="step-icon material-icons">check</span>
+                </div>
+                <h2>Before you begin</h2>
+            </div>
+            <div class="step-content">
+                <div class="container">
+                    <p>Before you begin content</p>
+                    <button class="btn btn-primary next-button" type="button">Begin</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step -->
+        <section class="step" id="step-1">
+            <div class="step-header">
+                <div class="step-number">
+                    <span class="step-icon material-icons">check</span>
+                </div>
+                <h2>Step 1 title</h2>
+            </div>
+            <div class="step-content">
+                <div class="container">
+                    <form id="step-1-form">
+                        <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
+                
+                        <fieldset id="s1q1-fieldset" data-radio-group required>
+                            <legend class="required-label"> Question 1 label</legend>
+                            <div class="radio-group">
+                               <input type="radio" id="s1q1-op1" name="s1q1" value="Option 1" data-toggle="s1q2-fieldset">
+                               <label for="s1q1-op1"></label>
+                            </div>
+                            <div class="radio-group">
+                               <input type="radio" id="s1q1-op2" name="s1q1" value="Option 2" data-toggle="s1q3-fieldset">
+                               <label for="s1q1-op2"></label>
+                            </div>
+                            <div class="radio-group">
+                               <input type="radio" id="s1q1-op3" name="s1q1" value="Option 3">
+                               <label for="s1q1-op3"></label>
+                            </div>
+                            <div class="radio-group">
+                               <input type="radio" id="s1q1-op4" name="s1q1" value="Option 4">
+                               <label for="s1q1-op4"></label>
+                            </div>
+                         </fieldset>
+                         <fieldset id="s1q2-fieldset" class="hidden" data-radio-group required>
+                            <legend class="required-label"> Question 2 label</legend>
+                            <div class="radio-group">
+                               <input type="radio" id="s1q2-op1" name="s1q2" value="Option 1" data-toggle="s1q3-fieldset">
+                               <label for="s1q2-op1"></label>
+                            </div>
+                            <div class="radio-group">
+                               <input type="radio" id="s1q2-op2" name="s1q2" value="Option 2">
+                               <label for="s1q2-op2"></label>
+                            </div>
+                         </fieldset>
+                         <fieldset id="s1q3-fieldset" class="hidden" data-radio-group required>
+                            <legend class="required-label"> Question 3 label</legend>
+                            <div class="radio-group">
+                               <input type="radio" id="s1q3-op1" name="s1q3" value="Option 1">
+                               <label for="s1q3-op1"></label>
+                            </div>
+                            <div class="radio-group">
+                               <input type="radio" id="s1q3-op2" name="s1q3" value="Option 2">
+                               <label for="s1q3-op2"></label>
+                            </div>
+                         </fieldset>
+            
+                        <button class="btn btn-secondary back-button" type="button">Back</button>
+                        <button class="btn btn-primary next-button" type="button">Next</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step -->
+        <section class="step" id="step-2">
+            <div class="step-header">
+                <div class="step-number">
+                    <span class="step-icon material-icons">check</span>
+                </div>
+                <h2>Step 2</h2>
+            </div>
+            <div class="step-content">
+                <p>Step content</p>
+        
+                <button class="btn btn-secondary back-button" type="button">Back</button>
+                <button class="btn btn-primary next-button" type="button">Next</button>
+            </div>
+        </section>
+
+        <!-- Step -->
+        <section class="step" id="step-3">
+            <div class="step-header">
+                <div class="step-number">
+                    <span class="step-icon material-icons">check</span>
+                </div>
+                <h2>Step 3</h2>
+            </div>
+            <div class="step-content">
+                <p>step content</p>
+                <button class="btn btn-secondary back-button" type="button">Back</button>
+                <button class="btn btn-primary next-button" type="button">Next</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
+
