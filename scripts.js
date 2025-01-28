@@ -36,7 +36,12 @@ class Stepper {
         step.classList.add('active');
         this.activeStep = step;
 
-        this.adjustMaxHeight(step);
+        //this.adjustMaxHeight(step); //hiding this fixed the accordion issue, unknown other effects/imapcts though
+    }
+}
+class dynamicTable {
+    constructor() {
+        
     }
 }
 
@@ -51,6 +56,8 @@ class ProgressiveDisclosure {
         document.querySelectorAll('[data-toggle], input[type="radio"]').forEach(input => {
             input.addEventListener('change', this.handleToggle.bind(this));
         });
+      
+
     }
 
     handleToggle(event) {
@@ -137,11 +144,7 @@ class ProgressiveDisclosure {
             });
         }
     }
-    
 }
-
-
-
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -169,46 +172,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Find all radio inputs
-    const radioInputs = document.querySelectorAll('input[type="radio"]');
-
-    // Iterate over each radio input
-    radioInputs.forEach(radio => {
-        // Get the associated label using the 'for' attribute
-        const label = document.querySelector(`label[for="${radio.id}"]`);
-
+    // Populate radio button labels with their 'value'
+    const inputsWLabels = document.querySelectorAll('input[type="radio"], input[type="checkbox"]');
+    inputsWLabels.forEach(input => {
+        const label = document.querySelector(`label[for="${input.id}"]`);
         if (label) {
-            // Populate the label content with the radio's value
-            label.textContent = radio.value;
+            label.textContent = input.value;
         }
     });
 
+    //Add asterisks to all required fields
+    const requiredInputs = document.querySelectorAll('.required-label');
+    requiredInputs.forEach(input => {
+    if (input) {
+        const asterisk = document.createElement('span');
+        asterisk.textContent = '* ';
+        asterisk.classList.add('label-ast');
+
+        input.insertBefore(asterisk, input.firstChild);
+    }
+    });
+
+    //Accordion functionality
+    const accordions = document.querySelectorAll('.accordion');
+    accordions.forEach(accordion => {
+        accordion.addEventListener('click', function() {
+            this.classList.toggle('active');
+            const accordionContent = this.nextElementSibling;
+            console.log(this.nextElementSibling)
+
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + 'px';
+            }
+        });
+    });
     
-
 });
-
 
 
 function toggleLB(lightboxID) {
 
-    document.getElementById('#' + lightboxID).classList.toggle('open');
+    document.getElementById(lightboxID).classList.toggle('open');
 
 }
 
-//Accordion functionality
-const accordions = document.querySelectorAll('.accordion');
-accordions.forEach(accordion => {
-    accordion.addEventListener('click', function() {
-        this.classList.toggle('active');
-        const accordionContent = this.nextElementSibling;
-        console.log(this.nextElementSibling)
 
-        if (panel.style.maxHeight) {
-            panel.style.maxHeight = null;
-        } else {
-            panel.style.maxHeight = panel.scrollHeight + 'px';
-        }
-    });
-});
 
 
