@@ -723,6 +723,13 @@ textarea {
 .panel h4 {
   margin:16px 0px;
 }
+
+.panel .heading-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+ 
+}
 .panel-data {
   display: flex;
   flex-direction: column;
@@ -775,9 +782,7 @@ textarea {
 .table {
   min-width:100%;
 }
-.table-wrapper {
-  width:100%;
-}
+
 
 .table th, td{
   text-align: left;

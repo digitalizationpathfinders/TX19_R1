@@ -1,3 +1,5 @@
+var repLevel = 2;
+
 class Stepper {
     constructor(stepSelector) {
         this.steps = Array.from(document.querySelectorAll(stepSelector));
@@ -39,11 +41,28 @@ class Stepper {
         //this.adjustMaxHeight(step); //hiding this fixed the accordion issue, unknown other effects/imapcts though
     }
 }
-class dynamicTable {
-    constructor() {
-        
-    }
-}
+
+// class DynamicTable {
+//     constructor(tableID, lightboxID) {
+//         this.table = document.getElementById(tableId);
+//         this.tbody = this.table.querySelector('tbody');
+//         this.lightbox = document.getElementById(lightboxId);
+//         this.inputs = {}; // Store inputs for lightbox form
+
+//         this.initializeDefaultRow();
+//     }
+//     initializeDefaultRow() {
+//         if (!this.tbody.querySelector('tr')) {
+//             const row = document.createElement('tr');
+//             const cell = document.createElement('td');
+//             cell.colSpan = 4; // Match the number of table columns
+//             cell.textContent = this.tbody.dataset.defaultText;
+//             row.appendChild(cell);
+//             this.tbody.appendChild(row);
+//         }
+//     }
+// }
+
 
 class ProgressiveDisclosure {
     constructor(stepperInstance = null) {
@@ -56,8 +75,6 @@ class ProgressiveDisclosure {
         document.querySelectorAll('[data-toggle], input[type="radio"]').forEach(input => {
             input.addEventListener('change', this.handleToggle.bind(this));
         });
-      
-
     }
 
     handleToggle(event) {
@@ -173,12 +190,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Populate radio button labels with their 'value'
-    const inputsWLabels = document.querySelectorAll('input[type="radio"], input[type="checkbox"]');
-    inputsWLabels.forEach(input => {
+    const inputsWithLabels = document.querySelectorAll('input[type="radio"], input[type="checkbox"]');
+    inputsWithLabels.forEach(input => {
         const label = document.querySelector(`label[for="${input.id}"]`);
         if (label) {
             label.textContent = input.value;
         }
+    });
+
+    //Initialize buttons that toggle lightbox
+    const lightboxTriggerButtons = document.querySelectorAll('.lightbox-trigger');
+    lightboxTriggerButtons.forEach(button => {
+        var buttonText = document.createTextNode(button.value);
+        button.appendChild(buttonText)
     });
 
     //Add asterisks to all required fields
@@ -192,6 +216,19 @@ document.addEventListener('DOMContentLoaded', () => {
         input.insertBefore(asterisk, input.firstChild);
     }
     });
+
+
+    // const dynamicTable = new DynamicTable('tb-upload-doc', 'lightbox-id');
+    // dynamicTable.initializeLightboxInputs({
+    //     fileName: document.getElementById('input-file-name'),
+    //     description: document.getElementById('input-description'),
+    //     fileSize: document.getElementById('input-file-size')
+    // });
+
+    // document.getElementById('add-row-button').addEventListener('click', () => {
+    //     dynamicTable.openLightbox();
+    // });
+
 
     //Accordion functionality
     const accordions = document.querySelectorAll('.accordion');
