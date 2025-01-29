@@ -18,8 +18,7 @@
         </header>
         <main class="stepper">
             <h1>TX19 - Asking for a clearance certificate</h1>
-            <!-- Step -->
-            <section class="step" id="step-0">
+            <section class="step active" id="step-0">
                 <div class="step-header">
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
@@ -53,8 +52,8 @@
                     </div>
                 </div>
             </section>
-            <!-- Step -->
-            <section class="step active" id="step-1">
+            
+            <section class="step" id="step-1">
                 <div class="step-header">
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
@@ -65,7 +64,7 @@
                     <div class="container">
                         <form id="step-1-form">
                             <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
-                            <fieldset id="s1q1-fieldset" data-radio-group required>
+                            <fieldset id="s1q1-fieldset" data-radio-group>
                                 <legend class="required-label"> Have all the required tax returns been filed?</legend>
                                 <div class="group">
                                     <input type="radio" id="s1q1-op1" name="s1q1" value="Yes" data-toggle="s1q2-fieldset">
@@ -89,14 +88,14 @@
                                     </div>
                                 </div>
                             </fieldset>
-                            <fieldset id="s1q2-fieldset" class="hidden" data-radio-group required>
+                            <fieldset id="s1q2-fieldset" class="hidden" data-radio-group>
                                 <legend class="required-label"> Have all the notices of assessment been received for the required tax returns?</legend>
                                 <div class="group">
-                                    <input type="radio" id="s1q2-op1" name="s1q2" value="Yes" data-toggle="alert-missingnoas">
+                                    <input type="radio" id="s1q2-op1" name="s1q2" value="Yes" data-toggle="s1q3-fieldset">
                                     <label for="s1q2-op1"></label>
                                 </div>
                                 <div class="group">
-                                    <input type="radio" id="s1q2-op2" name="s1q2" value="No" data-toggle="s1q3-fieldset">
+                                    <input type="radio" id="s1q2-op2" name="s1q2" value="No" data-toggle="alert-missingnoas">
                                     <label for="s1q2-op2"></label>
                                 </div>
                                 <div class="alert hidden" id="alert-missingnoas">
@@ -113,7 +112,7 @@
                                     </div>
                                 </div>
                             </fieldset>
-                            <fieldset id="s1q3-fieldset" class="hidden" data-radio-group required>
+                            <fieldset id="s1q3-fieldset" class="hidden" data-radio-group>
                                 <legend class="required-label"> Are there currently any outstanding balances with the CRA?</legend>
                                 <div class="group">
                                     <input type="radio" id="s1q3-op1" name="s1q3" value="Yes" data-toggle="alert-outstandingpayment">
@@ -137,14 +136,14 @@
                                     </div>
                                 </div>
                             </fieldset>
-                            <fieldset id="s1q4-fieldset" class="hidden" data-radio-group required>
+                            <fieldset id="s1q4-fieldset" class="hidden" data-radio-group>
                                 <legend class="required-label"> Are there currently any outstanding requests with the CRA (for example, an adjustment, appeal, objection, taxpayer relief, etc.)?</legend>
                                 <div class="group">
-                                    <input type="radio" id="s1q4-op1" name="s1q4" value="Yes">
+                                    <input type="radio" id="s1q4-op1" name="s1q4" value="Yes" data-toggle="alert-outstandingcase">
                                     <label for="s1q4-op1"></label>
                                 </div>
                                 <div class="group">
-                                    <input type="radio" id="s1q4-op2" name="s1q4" value="No" data-toggle="alert-outstandingcase">
+                                    <input type="radio" id="s1q4-op2" name="s1q4" value="No" >
                                     <label for="s1q4-op2"></label>
                                 </div>
                                 <div class="alert hidden" id="alert-outstandingcase">
@@ -160,6 +159,7 @@
                                         You cannot continue with this request. Go to <a>Progress tracker</a> to check the status of any in progress requests.
                                     </div>
                                 </div>
+                               
                             </fieldset>
                             <button class="btn btn-secondary back-button" type="button">Back</button>
                             <button class="btn btn-primary next-button" type="button">Next</button>
@@ -167,7 +167,7 @@
                     </div>
                 </div>
             </section>
-            <!-- Step -->
+
             <section class="step" id="step-2">
                 <div class="step-header">
                     <div class="step-number">
@@ -196,7 +196,7 @@
                                     </tr>
                                 </table>
                             </div>
-                            <fieldset id="s2q1-fieldset" data-radio-group required>
+                            <fieldset id="s2q1-fieldset" data-radio-group>
                                 <legend class="required-label"> Did the deceased taxpayer have a will?</legend>
                                 <div class="group">
                                     <input type="radio" id="s2q1-op1" name="s2q1" value="Yes" data-toggle="s2q2-fieldset">
@@ -207,7 +207,7 @@
                                     <label for="s2q1-op2"></label>
                                 </div>
                             </fieldset>
-                            <fieldset id="s2q2-fieldset" class="hidden" data-radio-group required>
+                            <fieldset id="s2q2-fieldset" class="hidden" data-radio-group>
                                 <legend class="required-label"> What is the estimated total value of the deceased individual's assets?</legend>
                                 <div class="group">
                                     <input type="radio" id="s2q2-op1" name="s2q2" value="$0 - $99,999" data-toggle="s2q3-fieldset">
@@ -244,11 +244,11 @@
                                     <label for="s2q4-op1"></label>
                                 </div>
                                 <div class="group">
-                                    <input type="radio" id="s2q2-op2" name="s2q4" value="$100,000 - $499,999" data-toggle="s2q5-fieldset">
+                                    <input type="radio" id="s2q4-op2" name="s2q4" value="$100,000 - $499,999" data-toggle="s2q5-fieldset">
                                     <label for="s2q4-op2"></label>
                                 </div>
                                 <div class="group">
-                                    <input type="radio" id="s2q2-op3" name="s2q4" value="$500, 000 - $999,999" data-toggle="s2q5-fieldset">
+                                    <input type="radio" id="s2q4-op3" name="s2q4" value="$500, 000 - $999,999" data-toggle="s2q5-fieldset">
                                     <label for="s2q4-op3"></label>
                                 </div>
                                 <div class="group">
@@ -273,7 +273,7 @@
                     </div>
                 </div>
             </section>
-            <!-- Step -->
+       
             <section class="step" id="step-3">
                 <div class="step-header">
                     <div class="step-number">
@@ -286,7 +286,8 @@
                         <form id="step-3-form">
                             <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
                             <br>
-                            <div id="legalrep-panel" class="panel level3">
+                            <div id="legalrep-panel-container"></div>
+                            <!-- <div id="legalrep-panel" class="panel level3">
                                
                                 <div class="heading-row">
                                     <h5>Legal representative</h5>
@@ -322,8 +323,8 @@
                                         <td class="value">Executor</td>
                                     </tr>
                                 </table>
-                            </div>
-                            <div class="alert level3" id="alert-mailing">
+                            </div> -->
+                            <div class="alert" id="alert-mailing">
                                 <div class="alert-info">
                                     <div class="line"></div>
                                     <div><span class="material-icons">
@@ -357,10 +358,8 @@
                                     </ul>
                                 </div>
                             </div>
-                            <button class="btn btn-secondary lightbox-trigger" type="button" onclick="toggleLB('addlegalrep-lightbox')" value="Add legal representative information">
-                                <span class="material-icons">
-                                add
-                                </span>
+                            <button class="btn btn-secondary" data-toggleLB="addlegalrep-lightbox" type="button">
+                                <span class="material-icons">add</span>
                             </button>
                             <br>
                             <button class="btn btn-secondary back-button" type="button">Back</button>
@@ -370,7 +369,7 @@
                             <div class="lightbox">
                                 <div class="header">
                                     <h3>Add legal representative information</h3>
-                                    <button class="btn-tertiary" type="button" onclick="toggleLB('addlegalrep-lightbox')">
+                                    <button data-closebtn class="btn-tertiary" type="button">
                                     <span class="material-icons">clear</span></button>
                                 </div>
                                 <div class="lightbox-content">
@@ -441,15 +440,15 @@
                                     </form>
                                 </div>
                                 <div class="buttons">
-                                    <button class="btn-primary" type="button" onclick="toggleLB('addlegalrep-lightbox')">Add representative</button>
-                                    <button class="btn-tertiary" type="button" onclick="toggleLB('addlegalrep-lightbox')">Cancel</button>
+                                    <button class="btn-primary" data-submit type="button">Add representative</button>
+                                    <button class="btn-tertiary" data-closebtn type="button">Cancel</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-            <!-- Step -->
+
             <section class="step" id="step-4">
                 <div class="step-header">
                     <div class="step-number">
@@ -490,7 +489,7 @@
                     </form>
                 </div>
             </section>
-            <!-- Step -->
+
             <section class="step" id="step-5">
                 <div class="step-header">
                     <div class="step-number">
@@ -582,7 +581,7 @@
                     <button class="btn btn-primary next-button" type="button">Next</button>
                 </div>
             </section>
-            <!-- Step -->
+
             <section class="step" id="step-6">
                 <div class="step-header">
                     <div class="step-number">

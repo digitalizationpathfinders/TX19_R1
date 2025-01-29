@@ -1,43 +1,21 @@
-var level = 2;
 
 class Stepper {
     constructor(stepSelector) {
         this.steps = Array.from(document.querySelectorAll(stepSelector));
         this.activeStep = this.steps.find(step => step.classList.contains('active'));
-        this.authenticationLevel(level);
+        this.stepHandlers = {}; // Store step instances
     }
 
-    adjustMaxHeight(step) {
-        const stepContent = step.querySelector('.step-content');
-        if (stepContent) {
-            stepContent.style.maxHeight = stepContent.scrollHeight + 'px';
-        }
-    }
+    // adjustMaxHeight(step) {
+    //     const stepContent = step.querySelector('.step-content');
+    //     if (stepContent) {
+    //         stepContent.style.maxHeight = stepContent.scrollHeight + 'px';
+    //     }
+    // }
 
-    jumpStep(stepId) {
-        this.setActive(this.steps.find(step => step.id === stepId));
-    }
-
-    navigateStep(direction) {
-        const currentIndex = this.steps.indexOf(this.activeStep);
-        const targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-
-
-        if (targetIndex >= 0 && targetIndex < this.steps.length) {
-           this.storeData(currentIndex);
-            this.setActive(this.steps[targetIndex]);
-        }
-    }
-
-    storeData(stepNum) {
-        const stepForm = document.querySelector(`#step-${stepNum}-form`);
-        if(stepForm){
-            const stepData = stepForm.querySelectorAll('input:checked, input[type=textbox]');
-            console.log(stepData);
-        }
-       
-    }
-
+    // jumpStep(stepId) {
+    //     this.setActive(this.steps.find(step => step.id === stepId));
+    // }
     setActive(step) {
         if (!step) return;
 
@@ -58,79 +36,273 @@ class Stepper {
         //this.adjustMaxHeight(step); //hiding this fixed the accordion issue, unknown other effects/imapcts though
     }
 
-    authenticationLevel(level){
-        const level2Content = document.querySelectorAll('.level2');
-        const level3Content = document.querySelectorAll('.level3');
-        if(level == 2) {
-          
-            level2Content.forEach(el => {
-                el.classList.remove('hidden');
-            })
-            level3Content.forEach(el => {
-                el.classList.add('hidden');
-            })
-        }
-        else {
-            level2Content.forEach(el => {
-                el.classList.add('hidden');
-            })
-            level3Content.forEach(el => {
-                el.classList.remove('hidden');
-            })
+
+    navigateStep(direction) {
+        const currentIndex = this.steps.indexOf(this.activeStep);
+        const targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+
+
+        if (targetIndex >= 0 && targetIndex < this.steps.length) {
+           this.storeData(currentIndex);
+            this.setActive(this.steps[targetIndex]);
         }
     }
 
-    customStepCode(stepNum){
+    storeData(stepNum) {
+        const stepForm = document.querySelector(`#step-${stepNum}-form`);
+        if (!stepForm) return;
 
-        switch(stepNum){
-            case 1:
-                break;
-            case 2:
-                break;
-            case 3:
-                var haveLegalRepInfo = false;
-                if(level == 3) 
-                    haveLegalRepInfo = true;
-
-                if(haveLegalRepInfo){
-
+        let dataObj = {};
+        stepForm.querySelectorAll("input, select, textarea").forEach(input => {
+            if (input.type === "radio" || input.type === "checkbox") {
+                if (input.checked) {
+                    dataObj[input.name] = input.value;
                 }
+            } else {
+                dataObj[input.name] = input.value;
+            }
+        });
 
-                break;
-            case 5:
-                //check if there are docs, populate table with docs if so, if not, fill with 
+        DataManager.saveData(`stepData_${stepNum}`, dataObj);
+    }
+
+    loadStoredData() {
+        this.steps.forEach((step, index) => {
+            let savedData = DataManager.getData(`stepData_${index}`);
+            if (!savedData) return;
+
+            Object.keys(savedData).forEach(key => {
+                let input = step.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === "radio" || input.type === "checkbox") {
+                        if (input.value === savedData[key]) {
+                            input.checked = true;
+                        }
+                    } else {
+                        input.value = savedData[key];
+                    }
+                }
+            });
+        });
+    }
+    
+
+    
+    customStepCode(stepNum){
+        if (!this.stepHandlers[stepNum]) {
+            switch (stepNum) {
+                case 3:
+                    this.stepHandlers[stepNum] = new Step3Handler(); // Call step 3 logic
+                    break;
+                // Future steps can be added here
+            }
         }
-
     }
 }
+
+class Step3Handler {
+    constructor() {
+        this.repPanelContainer = document.getElementById("legalrep-panel-container");
+        this.warningAlert = document.getElementById("alert-norep");
+        this.infoAlert = document.getElementById("alert-mailing");
+        this.addRepButton = document.querySelector('[data-togglelb="addlegalrep-lightbox"]');
+
+        this.userLevel = parseInt(DataManager.getData("userLevel")) || 2;
+        this.legalRep = DataManager.getData("legalRepresentative") || null;
+        this.mailRecipients = DataManager.getData("mailRecipients") || [];
+
+        this.prepopulateForLevel3();
+        this.updateRepresentativePanels();
+
+        // Listen for lightbox submissions
+        document.addEventListener("lightboxSubmitted", (event) => {
+            if (event.detail.lightboxId === "addlegalrep-lightbox") {
+                this.addMailRecipient(event.detail.formData);
+            }
+        });
+
+        document.addEventListener("dataUpdated", (event) => {
+            if (event.detail.key === "legalRepresentative" || event.detail.key === "mailRecipients") {
+                this.legalRep = DataManager.getData("legalRepresentative");
+                this.mailRecipients = DataManager.getData("mailRecipients") || [];
+                this.updateRepresentativePanels();
+            }
+        });
+    }
+
+    prepopulateForLevel3() {
+        if (this.userLevel === 3 && !this.legalRep) {
+            //START HERE - formatting of the address with line breaks and the entered one does not include the mailing address and it also only accounts for level 3, not level 2
+            const defaultRep = {
+                name: "John Doe",
+                role: "Executor",
+                address: "123 Main Street Toronto, Ontario, A1A 1A1, Canada",
+                phone: "(123) 456-7890",
+                altPhone: "(098) 765-4321"
+            };
+
+            DataManager.saveData("legalRepresentative", defaultRep);
+            this.legalRep = defaultRep;
+        }
+    }
+
+    addMailRecipient(formData) {
+        const newRecipient = {
+            name: formData["s3-repname"] || "N/A",
+            address: `${formData["s3-repcity"]}, ${formData["s3-reppostcode"]}, ${formData["s3-repcountry"]}`,
+            phone: formData["s3-reptel1"] || "N/A",
+            altPhone: formData["s3-reptel2"] || "N/A"
+        };
+
+        DataManager.appendToArray("mailRecipients", newRecipient);
+    }
+
+    updateRepresentativePanels() {
+        this.repPanelContainer.innerHTML = "";
+
+        if (this.legalRep) {
+            this.warningAlert.classList.add("hidden");
+            this.infoAlert.classList.remove("hidden");
+            this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
+
+            this.createRepresentativePanel(this.legalRep, "Legal Representative");
+        } else {
+            this.warningAlert.classList.remove("hidden");
+            this.infoAlert.classList.add("hidden");
+            this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add legal representative information`;
+        }
+
+        this.mailRecipients.forEach((recipient, index) => {
+            this.createRepresentativePanel(recipient, `Mail Recipient ${index + 1}`);
+        });
+    }
+
+    createRepresentativePanel(rep, title) {
+        const panel = document.createElement("div");
+        panel.classList.add("panel");
+
+        panel.innerHTML = `
+            <div class="heading-row">
+                <h5>${title}</h5>
+            </div>
+            <table class="panel-data">
+                <tr><td class="label">Name</td><td>${rep.name}</td></tr>
+                <tr><td class="label">Mailing Address</td><td>${rep.address}</td></tr>
+                <tr><td class="label">Primary Phone</td><td>${rep.phone}</td></tr>
+                <tr><td class="label">Alternate Phone</td><td>${rep.altPhone}</td></tr>
+            </table>
+        `;
+
+        this.repPanelContainer.appendChild(panel);
+    }
+}
+
+
+class DataManager {
+    static saveData(key, value) {
+        sessionStorage.setItem(key, JSON.stringify(value));
+        document.dispatchEvent(new CustomEvent("dataUpdated", { detail: { key, data: value } }));
+    }
+    static appendToArray(key, newValue) {
+        let existingData = DataManager.getData(key) || [];
+        if (!Array.isArray(existingData)) existingData = []; // Ensure it's an array
+        existingData.push(newValue);
+        DataManager.saveData(key, existingData);
+    }
+
+    static getData(key) {
+        let data = sessionStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+    }
+
+    static clearData(key) {
+        sessionStorage.removeItem(key);
+    }
+}
+
 
 class DynamicTable {
     constructor(tableID){
         this.table = document.getElementById(tableID);
-        this.populateDefault();
+        this.tbody = this.table.querySelector('tbody');
+
+        // Listen for data updates
+        document.addEventListener('dataUpdated', (event) => {
+            const { key, data } = event.detail;
+            if (key.startsWith('formData_')) {
+                this.populateTable(data);
+            }
+        });
     }
-    populateDefault(){
-        var tbody = this.table.querySelector('tbody');
-        var placeholdertext = tbody.dataset.placeholder;
-        tbody.innerHTML = `<td colspan="4" style="text-align:center;">${placeholdertext}</td>`;
+    populateTable(data) {
+        this.tbody.innerHTML = ''; // Clear table
+
+        if (Object.keys(data).length === 0) {
+            this.tbody.innerHTML = `<td colspan="4" style="text-align:center;">No data available</td>`;
+            return;
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${data.name || 'N/A'}</td>
+            <td>${data.email || 'N/A'}</td>
+            <td>${data.role || 'N/A'}</td>
+            <td><button class="btn-tertiary">Edit</button></td>
+        `;
+        this.tbody.appendChild(row);
     }
 }
 
 class FormLightbox {
-    constructor(lightboxID, triggerID){
-        this.lightbox = document.getElementById(lightboxID);
+    constructor(lightbox){
+        this.lightbox = lightbox;
+        this.form = this.lightbox.querySelector('form');
+        this.openTrigger = document.querySelector(`[data-togglelb="${lightbox.id}"]`);
+        this.submitButton = this.lightbox.querySelector('[data-submit]');
+       
+        if(this.openTrigger){
+            this.openTrigger.addEventListener('click', () => this.openLightbox());
+            var buttonText = document.createTextNode(this.openTrigger.value);
+            this.openTrigger.appendChild(buttonText)
+        }
         this.initializeEventListeners();
-        this.openTrigger = document.getElementById(triggerID);
     }
     initializeEventListeners() {
-        // Attach click event to buttons with the `data-togglelb` attribute
-        this.openTrigger.addEventListener('click', this.lightbox.classList.add('open'));
-        document.querySelectorAll('[data-closebtn]').forEach(btn => {
-            btn.addEventListener('click', this.lightbox.classList.remove('open'));
+        this.lightbox.querySelectorAll('[data-closebtn]').forEach(btn => {
+            btn.addEventListener('click', () => this.closeLightbox());
         });
 
+        if (this.submitButton) {
+            this.submitButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                this.sendFormData();
+                this.closeLightbox();
+            });
+        }
     }
-  
+    openLightbox() {
+        this.lightbox.classList.add('open');
+    }
+
+    closeLightbox() {
+        this.lightbox.classList.remove('open');
+    }
+    sendFormData() {
+        const formData = new FormData(this.form);
+        let dataObj = {};
+
+        formData.forEach((value, key) => {
+            dataObj[key] = value;
+        });
+
+        // Emit an event with the form data
+        document.dispatchEvent(new CustomEvent("lightboxSubmitted", {
+            detail: {
+                lightboxId: this.lightbox.id,
+                formData: dataObj
+            }
+        }));
+    }
 }
 
 class ProgressiveDisclosure {
@@ -238,6 +410,10 @@ class ProgressiveDisclosure {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    DataManager.saveData("userLevel", "3");
+
+
     // Initialize Stepper
     const stepper = new Stepper('.step');
 
@@ -271,12 +447,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    //Initialize buttons that toggle lightbox
-    const lightboxTriggerButtons = document.querySelectorAll('.lightbox-trigger');
-    lightboxTriggerButtons.forEach(button => {
-        var buttonText = document.createTextNode(button.value);
-        button.appendChild(buttonText)
-    });
 
     //Add asterisks to all required fields
     const requiredInputs = document.querySelectorAll('.required-label');
@@ -289,22 +459,11 @@ document.addEventListener('DOMContentLoaded', () => {
         input.insertBefore(asterisk, input.firstChild);
     }
     });
-    var dynamicTables = [];
+    //var dynamicTables = [];
+    //document.querySelectorAll('.dynamic-table').forEach(table => { dynamicTables.push(new DynamicTable(table.id)) });
 
-    document.querySelectorAll('.dynamic-table').forEach(table => { dynamicTables.push(new DynamicTable(table.id)) });
-
-
-
-    // const dynamicTable = new DynamicTable('tb-upload-doc', 'lightbox-id');
-    // dynamicTable.initializeLightboxInputs({
-    //     fileName: document.getElementById('input-file-name'),
-    //     description: document.getElementById('input-description'),
-    //     fileSize: document.getElementById('input-file-size')
-    // });
-
-    // document.getElementById('add-row-button').addEventListener('click', () => {
-    //     dynamicTable.openLightbox();
-    // });
+    document.querySelectorAll('.dynamic-table').forEach(table => { new DynamicTable(table.id) });
+    document.querySelectorAll('.lightbox-container').forEach(lb => new FormLightbox(lb));
 
 
     //Accordion functionality
@@ -331,3 +490,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+window.addEventListener('beforeunload', () => {
+    sessionStorage.clear();
+});
