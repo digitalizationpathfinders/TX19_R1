@@ -1,9 +1,10 @@
-var repLevel = 2;
+var level = 2;
 
 class Stepper {
     constructor(stepSelector) {
         this.steps = Array.from(document.querySelectorAll(stepSelector));
         this.activeStep = this.steps.find(step => step.classList.contains('active'));
+        this.authenticationLevel(level);
     }
 
     adjustMaxHeight(step) {
@@ -21,53 +22,122 @@ class Stepper {
         const currentIndex = this.steps.indexOf(this.activeStep);
         const targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
 
+
         if (targetIndex >= 0 && targetIndex < this.steps.length) {
+           this.storeData(currentIndex);
             this.setActive(this.steps[targetIndex]);
         }
+    }
+
+    storeData(stepNum) {
+        const stepForm = document.querySelector(`#step-${stepNum}-form`);
+        if(stepForm){
+            const stepData = stepForm.querySelectorAll('input:checked, input[type=textbox]');
+            console.log(stepData);
+        }
+       
     }
 
     setActive(step) {
         if (!step) return;
 
         if (this.activeStep) {
+            
             this.activeStep.classList.remove('active');
             const stepContent = this.activeStep.querySelector('.step-content');
-            if (stepContent) stepContent.style.maxHeight = null;
+            if (stepContent) {
+                stepContent.style.maxHeight = null;
+            }
         }
 
         step.classList.add('active');
         this.activeStep = step;
 
+        this.customStepCode(this.steps.indexOf(this.activeStep))
+
         //this.adjustMaxHeight(step); //hiding this fixed the accordion issue, unknown other effects/imapcts though
+    }
+
+    authenticationLevel(level){
+        const level2Content = document.querySelectorAll('.level2');
+        const level3Content = document.querySelectorAll('.level3');
+        if(level == 2) {
+          
+            level2Content.forEach(el => {
+                el.classList.remove('hidden');
+            })
+            level3Content.forEach(el => {
+                el.classList.add('hidden');
+            })
+        }
+        else {
+            level2Content.forEach(el => {
+                el.classList.add('hidden');
+            })
+            level3Content.forEach(el => {
+                el.classList.remove('hidden');
+            })
+        }
+    }
+
+    customStepCode(stepNum){
+
+        switch(stepNum){
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                var haveLegalRepInfo = false;
+                if(level == 3) 
+                    haveLegalRepInfo = true;
+
+                if(haveLegalRepInfo){
+
+                }
+
+                break;
+            case 5:
+                //check if there are docs, populate table with docs if so, if not, fill with 
+        }
+
     }
 }
 
-// class DynamicTable {
-//     constructor(tableID, lightboxID) {
-//         this.table = document.getElementById(tableId);
-//         this.tbody = this.table.querySelector('tbody');
-//         this.lightbox = document.getElementById(lightboxId);
-//         this.inputs = {}; // Store inputs for lightbox form
+class DynamicTable {
+    constructor(tableID){
+        this.table = document.getElementById(tableID);
+        this.populateDefault();
+    }
+    populateDefault(){
+        var tbody = this.table.querySelector('tbody');
+        var placeholdertext = tbody.dataset.placeholder;
+        tbody.innerHTML = `<td colspan="4" style="text-align:center;">${placeholdertext}</td>`;
+    }
+}
 
-//         this.initializeDefaultRow();
-//     }
-//     initializeDefaultRow() {
-//         if (!this.tbody.querySelector('tr')) {
-//             const row = document.createElement('tr');
-//             const cell = document.createElement('td');
-//             cell.colSpan = 4; // Match the number of table columns
-//             cell.textContent = this.tbody.dataset.defaultText;
-//             row.appendChild(cell);
-//             this.tbody.appendChild(row);
-//         }
-//     }
-// }
+class FormLightbox {
+    constructor(lightboxID, triggerID){
+        this.lightbox = document.getElementById(lightboxID);
+        this.initializeEventListeners();
+        this.openTrigger = document.getElementById(triggerID);
+    }
+    initializeEventListeners() {
+        // Attach click event to buttons with the `data-togglelb` attribute
+        this.openTrigger.addEventListener('click', this.lightbox.classList.add('open'));
+        document.querySelectorAll('[data-closebtn]').forEach(btn => {
+            btn.addEventListener('click', this.lightbox.classList.remove('open'));
+        });
 
+    }
+  
+}
 
 class ProgressiveDisclosure {
     constructor(stepperInstance = null) {
         this.stepper = stepperInstance; // Optionally pass the stepper instance
         this.initializeEventListeners();
+        
     }
 
     initializeEventListeners() {
@@ -75,6 +145,7 @@ class ProgressiveDisclosure {
         document.querySelectorAll('[data-toggle], input[type="radio"]').forEach(input => {
             input.addEventListener('change', this.handleToggle.bind(this));
         });
+
     }
 
     handleToggle(event) {
@@ -161,6 +232,8 @@ class ProgressiveDisclosure {
             });
         }
     }
+
+
 }
 
 
@@ -216,6 +289,10 @@ document.addEventListener('DOMContentLoaded', () => {
         input.insertBefore(asterisk, input.firstChild);
     }
     });
+    var dynamicTables = [];
+
+    document.querySelectorAll('.dynamic-table').forEach(table => { dynamicTables.push(new DynamicTable(table.id)) });
+
 
 
     // const dynamicTable = new DynamicTable('tb-upload-doc', 'lightbox-id');
@@ -249,11 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-function toggleLB(lightboxID) {
 
-    document.getElementById(lightboxID).classList.toggle('open');
-
-}
 
 
 
