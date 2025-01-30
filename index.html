@@ -18,7 +18,7 @@
         </header>
         <main class="stepper">
             <h1>TX19 - Asking for a clearance certificate</h1>
-            <section class="step active" id="step-0">
+            <section class="step" id="step-0">
                 <div class="step-header">
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
@@ -391,49 +391,64 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="field-row">
-                                            <div>
-                                                <label class="required-label" for="s3-repname">Mailing address</label>
-                                                <input type="text" id="s3-repmail" name="s3-repname">
+                                        
+                                        <fieldset id="s3-country-fieldset" data-radio-group>
+                                            <legend class="required-label"> Country of residence</legend>
+                                            <div class="group">
+                                                <input type="radio" id="s3-country-op1" name="s3-country" value="Canada" data-toggle="s3-canada-address">
+                                                <label for="s3-country-op1"></label>
                                             </div>
-                                        </div>
-                                        <div class="field-row">
-                                            <div>
-                                                <label class="required-label" for="s3-repcity">City, town or community</label>
-                                                <input type="text" id="s3-repcity" name="s3-repcity">
+                                            <div class="group">
+                                                <input type="radio" id="s3-country-op2" name="s3-country" value="Outside of Canada" data-toggle="s3-international-address">
+                                                <label for="s3-country-op2"></label>
                                             </div>
-                                            <div>
-                                                <label class="required-label" for="s3-reprole">Province</label>
-                                                <select id="s3-reprole" name="s3-reprole">
-                                                    <option value="Select" selected>(Select)</option>
-                                                    <option value="saab">Saab</option>
-                                                    <option value="fiat">Fiat</option>
-                                                    <option value="audi">Audi</option>
-                                                </select>
+                                            </fieldset>
+                                            <div id="s3-canada-address" class="hidden">
+                                                <div class="field-row">
+                                                    <div>
+                                                        <label class="required-label" for="s3-caddress">Mailing address</label>
+                                                        <input type="text" id="s3-caddress" name="s3-rep-caddress">
+                                                    </div>
+                                                    <div>
+                                                        <label class="required-label" for="s3-repcity">City, town or community</label>
+                                                        <input type="text" id="s3-repcity" name="s3-repcity">
+                                                    </div>
+                                                </div>
+                                                <div class="field-row">
+                                                    <div>
+                                                        <label class="required-label" for="s3-repprov">Province</label>
+                                                        <select id="s3-repprov" name="s3-repprov">
+                                                            <option value="Select" selected>(Select)</option>
+                                                            <option value="saab">Saab</option>
+                                                            <option value="fiat">Fiat</option>
+                                                            <option value="audi">Audi</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label class="required-label" for="s3-reppostcode">Postal code</label>
+                                                        <input type="text" id="s3-reppostcode" name="s3-reppostcode">
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="field-row">
-                                            <div>
-                                                <label class="required-label" for="s3-reppostcode">Postal code</label>
-                                                <input type="text" id="s3-reppostcode" name="s3-reppostcode">
+                                            <div id="s3-international-address" class="hidden">
+                                                <div class="field-row">
+
+                                                <div>
+                                                    <label class="required-label" for="s3-iaddress">Mailing address</label>
+                                                    <input class="x2-height-input" type="text" id="s3-iaddress" name="s3-rep-iaddress">
+                                                </div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label class="required-label" for="s3-repcountry">Country</label>
-                                                <select id="s3-repcountry" name="s3-repcountry">
-                                                    <option value="Select" selected>(Select)</option>
-                                                    <option value="saab">Saab</option>
-                                                    <option value="fiat">Fiat</option>
-                                                    <option value="audi">Audi</option>
-                                                </select>
-                                            </div>
-                                        </div>
+
+                                        
+                                      
                                         <div class="field-row">
                                             <div>
                                                 <label class="required-label" for="s3-reptel1">Primary telephone number</label>
                                                 <input type="text" id="s3-reptel1" name="s3-reptel1">
                                             </div>
                                             <div>
-                                                <label for="s3-reptel2">Alternate telephone number</label>
+                                                <label class="optional-label" for="s3-reptel2">Alternate telephone number</label>
                                                 <input type="text" id="s3-reptel2" name="s3-reptel2">
                                             </div>
                                         </div>
@@ -490,7 +505,7 @@
                 </div>
             </section>
 
-            <section class="step" id="step-5">
+            <section class="step active" id="step-5">
                 <div class="step-header">
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
@@ -543,7 +558,7 @@
                                 </tbody>
                             </table>
                             <div class="buttons">
-                                <button class="btn-secondary close" type="button" onclick="toggleLB('attachdoc-lightbox')">
+                                <button class="btn-secondary close" type="button" data-togglelb="uploaddoc-lightbox">
                                 <span class="material-icons">
                                 add
                                 </span>
@@ -555,7 +570,7 @@
                         <div class="lightbox">
                             <div class="header">
                                 <h3>Upload document</h3>
-                                <button class="btn-tertiary" type="button" onclick="toggleLB('uploaddoc-lightbox')">
+                                <button class="btn-tertiary" type="button" data-closebtn>
                                 <span class="material-icons">clear</span></button>
                             </div>
                             <div class="lightbox-content">
@@ -568,12 +583,12 @@
                                     <span class="fileName" id="s5-filename">No file chosen.</span>
                                     
                                     <label for="5lb-descfield" class="required-label">Provide a brief description of your document (maximum 150 characters).</label>
-                                    <input type="text" id="s5lb-descfield" name="s5lb-desc" maxlength="150" required>
+                                    <input type="text" id="s5lb-desc" name="s5lb-desc" maxlength="150" required>
                                 </form>
                             </div>
                             <div class="buttons">
-                                <button class="btn-primary" type="button" onclick="toggleLB('uploaddoc-lightbox')">Upload document</button>
-                                <button class="btn-tertiary" type="button" onclick="toggleLB('uploaddoc-lightbox')">Cancel</button>
+                                <button class="btn-primary" type="button" data-submit>Upload document</button>
+                                <button class="btn-tertiary" type="button" data-closebtn>Cancel</button>
                             </div>
                         </div>
                     </div>

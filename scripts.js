@@ -6,12 +6,12 @@ class Stepper {
         this.stepHandlers = {}; // Store step instances
     }
 
-    // adjustMaxHeight(step) {
-    //     const stepContent = step.querySelector('.step-content');
-    //     if (stepContent) {
-    //         stepContent.style.maxHeight = stepContent.scrollHeight + 'px';
-    //     }
-    // }
+    adjustMaxHeight(step) {
+        const stepContent = step.querySelector('.step-content');
+        if (stepContent) {
+            stepContent.style.maxHeight = stepContent.scrollHeight + 'px';
+        }
+    }
 
     // jumpStep(stepId) {
     //     this.setActive(this.steps.find(step => step.id === stepId));
@@ -85,16 +85,16 @@ class Stepper {
             });
         });
     }
-    
 
-    
     customStepCode(stepNum){
         if (!this.stepHandlers[stepNum]) {
             switch (stepNum) {
                 case 3:
                     this.stepHandlers[stepNum] = new Step3Handler(); // Call step 3 logic
                     break;
-                // Future steps can be added here
+                case 5:
+                    this.stepHandlers[stepNum] = new Step5Handler();
+                    break;
             }
         }
     }
@@ -105,6 +105,8 @@ class Step3Handler {
         this.repPanelContainer = document.getElementById("legalrep-panel-container");
         this.warningAlert = document.getElementById("alert-norep");
         this.infoAlert = document.getElementById("alert-mailing");
+        this.lightboxHeader = document.querySelector('#addlegalrep-lightbox .header h3');
+        this.lightboxButton = document.querySelector('#addlegalrep-lightbox [data-submit]');
         this.addRepButton = document.querySelector('[data-togglelb="addlegalrep-lightbox"]');
 
         this.userLevel = parseInt(DataManager.getData("userLevel")) || 2;
@@ -136,7 +138,7 @@ class Step3Handler {
             const defaultRep = {
                 name: "John Doe",
                 role: "Executor",
-                address: "123 Main Street Toronto, Ontario, A1A 1A1, Canada",
+                address: "123 Main Street<br>Toronto, Ontario A1A 1A1<br>Canada",
                 phone: "(123) 456-7890",
                 altPhone: "(098) 765-4321"
             };
@@ -147,11 +149,22 @@ class Step3Handler {
     }
 
     addMailRecipient(formData) {
+        let address = " ";
+
+        // Determine the correct address fields based on selected country
+        if (formData["s3-country"] === "Canada") {
+            address = `${formData["s3-caddress"]}<br>${formData["s3-repcity"]}, ${formData["s3-repprov"]} ${formData["s3-reppostcode"]}<br>Canada`;
+        } else if (formData["s3-country"] === "Outside of Canada") {
+            address = `${formData["s3-iaddress"]}`;
+        }
+
+
         const newRecipient = {
-            name: formData["s3-repname"] || "N/A",
-            address: `${formData["s3-repcity"]}, ${formData["s3-reppostcode"]}, ${formData["s3-repcountry"]}`,
-            phone: formData["s3-reptel1"] || "N/A",
-            altPhone: formData["s3-reptel2"] || "N/A"
+            name: formData["s3-repname"] || " ",
+            role: formData["s3-reprole"] || " ",
+            address: address,
+            phone: formData["s3-reptel1"] || " ",
+            altPhone: formData["s3-reptel2"] || " "
         };
 
         DataManager.appendToArray("mailRecipients", newRecipient);
@@ -159,17 +172,19 @@ class Step3Handler {
 
     updateRepresentativePanels() {
         this.repPanelContainer.innerHTML = "";
-
+       
         if (this.legalRep) {
             this.warningAlert.classList.add("hidden");
             this.infoAlert.classList.remove("hidden");
             this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
+            this.lightboxHeader.textContent = "Add additional mail recipient"
 
             this.createRepresentativePanel(this.legalRep, "Legal Representative");
         } else {
             this.warningAlert.classList.remove("hidden");
             this.infoAlert.classList.add("hidden");
             this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add legal representative information`;
+             this.lightboxHeader.textContent = "Add legal representative information"
         }
 
         this.mailRecipients.forEach((recipient, index) => {
@@ -197,6 +212,48 @@ class Step3Handler {
     }
 }
 
+class Step5Handler {
+    constructor() {
+        this.dynamicTable = new DynamicTable(
+            "tb-upload-doc", 
+            "uploaddoc-lightbox", 
+            "uploadedDocuments", 
+            ["name", "description", "size"]
+        );
+        this.initFakeFileUpload();
+    }
+
+    //these are the wrong IDs: start here
+    initFakeFileUpload() {
+        this.fakeFileButton = document.getElementById("fake-file-button");
+        this.fakeFileNameSpan = document.getElementById("fake-file-name");
+        this.fakeFileInput = document.getElementById("s5-filename");
+        this.fileSizeInput = document.getElementById("s5-size");
+
+        if (!this.fakeFileButton) return; // Prevent errors if button is missing
+
+        // Fake file names for demo purposes
+        this.demoFileNames = [
+            "Contract_Agreement.pdf",
+            "Estate_Document.docx",
+            "Final_Tax_Return.xlsx",
+            "Legal_Declaration.pdf",
+            "Certificate_of_Clearance.pdf"
+        ];
+
+        this.fakeFileButton.addEventListener("click", () => this.selectFakeFile());
+    }
+
+    selectFakeFile() {
+        const randomFile = this.demoFileNames[Math.floor(Math.random() * this.demoFileNames.length)];
+        const randomSize = Math.floor(Math.random() * 450) + 50 + " KB";
+
+        this.fakeFileNameSpan.textContent = randomFile;
+        this.fakeFileInput.value = randomFile;
+        this.fileSizeInput.value = randomSize;
+    }
+}
+
 
 class DataManager {
     static saveData(key, value) {
@@ -220,38 +277,147 @@ class DataManager {
     }
 }
 
-
 class DynamicTable {
-    constructor(tableID){
+    constructor(tableID, lightboxID, storageKey, columns) {
         this.table = document.getElementById(tableID);
-        this.tbody = this.table.querySelector('tbody');
+        this.tbody = this.table.querySelector("tbody");
+        this.defaultText = this.tbody.dataset.placeholder;
+        this.lightbox = document.getElementById(lightboxID);
+        this.storageKey = storageKey;
+        this.columns = columns; // Array of column keys (e.g., ["name", "description", "size"])
+        
+        this.data = DataManager.getData(this.storageKey) || [];
 
-        // Listen for data updates
-        document.addEventListener('dataUpdated', (event) => {
-            const { key, data } = event.detail;
-            if (key.startsWith('formData_')) {
-                this.populateTable(data);
-            }
-        });
+        this.populateTable();
+        this.setupLightboxEvents();
     }
-    populateTable(data) {
-        this.tbody.innerHTML = ''; // Clear table
 
-        if (Object.keys(data).length === 0) {
-            this.tbody.innerHTML = `<td colspan="4" style="text-align:center;">No data available</td>`;
+    populateTable() {
+        this.tbody.innerHTML = ""; // Clear the table first
+
+        if (this.data.length === 0) {
+            this.tbody.innerHTML = `<tr><td colspan="${this.columns.length + 1}" style="text-align:center;">${this.defaultText}</td></tr>`;
             return;
         }
 
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${data.name || 'N/A'}</td>
-            <td>${data.email || 'N/A'}</td>
-            <td>${data.role || 'N/A'}</td>
-            <td><button class="btn-tertiary">Edit</button></td>
-        `;
-        this.tbody.appendChild(row);
+        this.data.forEach((row, index) => {
+            const tr = document.createElement("tr");
+            this.columns.forEach((col) => {
+                tr.innerHTML += `<td>${row[col] || "N/A"}</td>`;
+            });
+
+            tr.innerHTML += `
+                <td>
+                    <button class="btn-tertiary edit-btn" data-index="${index}"><span class="material-icons">edit</span>Edit</button>
+                    <button class="btn-tertiary delete-btn" data-index="${index}">
+                    <span class="material-icons">close</span>Delete</button>
+                </td>
+            `;
+
+            this.tbody.appendChild(tr);
+        });
+
+        // Attach event listeners for edit and delete buttons
+        this.tbody.querySelectorAll(".edit-btn").forEach((btn) => {
+            btn.addEventListener("click", (event) => {
+                this.editRow(event.target.dataset.index);
+            });
+        });
+
+        this.tbody.querySelectorAll(".delete-btn").forEach((btn) => {
+            btn.addEventListener("click", (event) => {
+                this.deleteRow(event.target.dataset.index);
+            });
+        });
+    }
+
+    setupLightboxEvents() {
+        document.addEventListener("lightboxSubmitted", (event) => {
+            if (event.detail.lightboxId === this.lightbox.id) {
+                this.saveRow(event.detail.formData);
+            }
+        });
+    }
+
+    editRow(index) {
+        const rowData = this.data[index];
+
+        // Pre-fill the form fields in the lightbox
+        const form = this.lightbox.querySelector("form");
+        Object.keys(rowData).forEach((key) => {
+            const input = form.querySelector(`[name="${key}"]`);
+            if (input) input.value = rowData[key];
+        });
+
+        // Store the row index being edited
+        this.lightbox.dataset.editIndex = index;
+
+        // Open the lightbox
+        this.openLightbox();
+    }
+
+    saveRow(formData) {
+        const editIndex = this.lightbox.dataset.editIndex;
+
+        if (editIndex !== undefined) {
+            this.data[editIndex] = formData; // Update existing row
+            delete this.lightbox.dataset.editIndex;
+        } else {
+            this.data.push(formData); // Add new row
+        }
+
+        DataManager.saveData(this.storageKey, this.data);
+        this.populateTable();
+        this.closeLightbox();
+    }
+
+    deleteRow(index) {
+        this.data.splice(index, 1);
+        DataManager.saveData(this.storageKey, this.data);
+        this.populateTable();
+    }
+
+    openLightbox() {
+        this.lightbox.classList.add("open");
+    }
+
+    closeLightbox() {
+        this.lightbox.classList.remove("open");
     }
 }
+
+
+// class DynamicTable {
+//     constructor(tableID){
+//         this.table = document.getElementById(tableID);
+//         this.tbody = this.table.querySelector('tbody');
+
+//         // Listen for data updates
+//         document.addEventListener('dataUpdated', (event) => {
+//             const { key, data } = event.detail;
+//             if (key.startsWith('formData_')) {
+//                 this.populateTable(data);
+//             }
+//         });
+//     }
+//     populateTable(data) {
+//         this.tbody.innerHTML = ''; // Clear table
+
+//         if (Object.keys(data).length === 0) {
+//             this.tbody.innerHTML = `<td colspan="4" style="text-align:center;">No data available</td>`;
+//             return;
+//         }
+
+//         const row = document.createElement('tr');
+//         row.innerHTML = `
+//             <td>${data.name || 'N/A'}</td>
+//             <td>${data.email || 'N/A'}</td>
+//             <td>${data.role || 'N/A'}</td>
+//             <td><button class="btn-tertiary">Edit</button></td>
+//         `;
+//         this.tbody.appendChild(row);
+//     }
+// }
 
 class FormLightbox {
     constructor(lightbox){
@@ -459,10 +625,8 @@ document.addEventListener('DOMContentLoaded', () => {
         input.insertBefore(asterisk, input.firstChild);
     }
     });
-    //var dynamicTables = [];
-    //document.querySelectorAll('.dynamic-table').forEach(table => { dynamicTables.push(new DynamicTable(table.id)) });
-
-    document.querySelectorAll('.dynamic-table').forEach(table => { new DynamicTable(table.id) });
+  
+    //document.querySelectorAll('.dynamic-table').forEach(table => { new DynamicTable(table.id) });
     document.querySelectorAll('.lightbox-container').forEach(lb => new FormLightbox(lb));
 
 
@@ -472,7 +636,6 @@ document.addEventListener('DOMContentLoaded', () => {
         accordion.addEventListener('click', function() {
             this.classList.toggle('active');
             const accordionContent = this.nextElementSibling;
-            console.log(this.nextElementSibling)
 
             if (panel.style.maxHeight) {
                 panel.style.maxHeight = null;

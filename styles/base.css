@@ -489,13 +489,14 @@ padding:8px;
   margin:0;
   padding:0;
 }
+
 .label-ast {
   color:red;
   margin-left:0;
   padding:0 !important;
 }
 
-.required-label {
+.required-label, .optional-label {
   padding-top:12px;
 }
 
@@ -589,6 +590,10 @@ input[type="text"],
 select {
   width:100%;
   box-sizing: border-box !important;
+}
+
+.x2-height-input {
+  height:82px;
 }
 textarea {
   font-family: 'Noto Sans', sans-serif;
@@ -787,7 +792,6 @@ textarea {
 .table th, td{
   text-align: left;
   padding:12px 12px;
-  vertical-align:top;
  
 }
 
@@ -803,6 +807,8 @@ textarea {
   background-color:#26374A;
   border:1px solid#26374A;
   color:#fff;
+  vertical-align:top;
+
 }
 .table th:first-child {
   border-radius:4px 0 0 0;
@@ -815,6 +821,8 @@ textarea {
 
 .table td{
   border-bottom: 1px solid #989DA6;
+  vertical-align:middle;
+
 }
 
 .table td:first-child{
@@ -840,6 +848,13 @@ textarea {
 .table-resp .label,
 .table-resp .value {
   width:100%;
+}
+
+.table th:last-child,
+.table td:last-child {
+    width: 1%;
+    white-space: nowrap;
+    text-align: left;
 }
 
 
