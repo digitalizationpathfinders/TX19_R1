@@ -578,9 +578,12 @@
                                     <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
                                     <br>
                                     <label for="s5lb-upload" class="required-label">Upload your document</label>
-                                    <p>Allowable file types: .pdf, .doc, .docx, .xls, .xlsx, .rtf, .txt, .jpg, .jpeg, .tiff, .tif, .xps</p>
-                                    <button type="button" class="btn-secondary">Browse</button>
-                                    <span class="fileName" id="s5-filename">No file chosen.</span>
+                                    Allowable file types: .pdf, .doc, .docx, .xls, .xlsx, .rtf, .txt, .jpg, .jpeg, .tiff, .tif, .xps
+                                    <br><button id="s5-browsebtn" type="button" class="btn-secondary">Browse</button>
+                                    <span class="fileName" id="s5-filename-display">No file chosen.</span>
+
+                                    <input type="hidden" id="s5-filename" name="name">
+                                    <input type="hidden" id="s5-size" name="size">
                                     
                                     <label for="5lb-descfield" class="required-label">Provide a brief description of your document (maximum 150 characters).</label>
                                     <input type="text" id="s5lb-desc" name="s5lb-desc" maxlength="150" required>

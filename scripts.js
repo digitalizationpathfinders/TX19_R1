@@ -220,38 +220,10 @@ class Step5Handler {
             "uploadedDocuments", 
             ["name", "description", "size"]
         );
-        this.initFakeFileUpload();
+
+       
     }
 
-    //these are the wrong IDs: start here
-    initFakeFileUpload() {
-        this.fakeFileButton = document.getElementById("fake-file-button");
-        this.fakeFileNameSpan = document.getElementById("fake-file-name");
-        this.fakeFileInput = document.getElementById("s5-filename");
-        this.fileSizeInput = document.getElementById("s5-size");
-
-        if (!this.fakeFileButton) return; // Prevent errors if button is missing
-
-        // Fake file names for demo purposes
-        this.demoFileNames = [
-            "Contract_Agreement.pdf",
-            "Estate_Document.docx",
-            "Final_Tax_Return.xlsx",
-            "Legal_Declaration.pdf",
-            "Certificate_of_Clearance.pdf"
-        ];
-
-        this.fakeFileButton.addEventListener("click", () => this.selectFakeFile());
-    }
-
-    selectFakeFile() {
-        const randomFile = this.demoFileNames[Math.floor(Math.random() * this.demoFileNames.length)];
-        const randomSize = Math.floor(Math.random() * 450) + 50 + " KB";
-
-        this.fakeFileNameSpan.textContent = randomFile;
-        this.fakeFileInput.value = randomFile;
-        this.fileSizeInput.value = randomSize;
-    }
 }
 
 
@@ -386,38 +358,6 @@ class DynamicTable {
     }
 }
 
-
-// class DynamicTable {
-//     constructor(tableID){
-//         this.table = document.getElementById(tableID);
-//         this.tbody = this.table.querySelector('tbody');
-
-//         // Listen for data updates
-//         document.addEventListener('dataUpdated', (event) => {
-//             const { key, data } = event.detail;
-//             if (key.startsWith('formData_')) {
-//                 this.populateTable(data);
-//             }
-//         });
-//     }
-//     populateTable(data) {
-//         this.tbody.innerHTML = ''; // Clear table
-
-//         if (Object.keys(data).length === 0) {
-//             this.tbody.innerHTML = `<td colspan="4" style="text-align:center;">No data available</td>`;
-//             return;
-//         }
-
-//         const row = document.createElement('tr');
-//         row.innerHTML = `
-//             <td>${data.name || 'N/A'}</td>
-//             <td>${data.email || 'N/A'}</td>
-//             <td>${data.role || 'N/A'}</td>
-//             <td><button class="btn-tertiary">Edit</button></td>
-//         `;
-//         this.tbody.appendChild(row);
-//     }
-// }
 
 class FormLightbox {
     constructor(lightbox){
