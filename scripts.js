@@ -207,7 +207,6 @@ class Step3Handler {
                 <tr><td class="label">Alternate Phone</td><td>${rep.altPhone}</td></tr>
             </table>
         `;
-
         this.repPanelContainer.appendChild(panel);
     }
 }
@@ -219,13 +218,46 @@ class Step5Handler {
             "uploaddoc-lightbox", 
             "uploadedDocuments", 
             ["name", "description", "size"]
-        );
+        );    
+        
+        this.browseFileButton = document.getElementById("s5-browsebtn");
+        this.fileNameDisplay = document.getElementById("s5-filename-display");
+        this.hiddenFileInput = document.getElementById("s5-filename");
+        this.hiddenFileSize = document.getElementById("s5-size");
 
-       
+        this.fileUpload();
+        //this.listenForLightboxSubmit();
     }
 
-}
+    fileUpload() {
+        if(!this.browseFileButton) return;
 
+        this.fakeFileNames = [
+            "Contract_Agreement.pdf",
+            "Estate_Document.docx",
+            "Final_Tax_return.xlsx",
+            "LegalDeclaration.pdf"
+        ];
+
+        this.browseFileButton.addEventListener("click", () => this.selectFile());
+       
+    }
+    selectFile() {
+        this.selectedFileName = this.fakeFileNames[Math.floor(Math.random() * this.fakeFileNames.length)];
+
+        this.fileNameDisplay.textContent = this.selectedFileName;
+        this.hiddenFileInput.value = this.selectedFileName;
+
+        const fakeSize = Math.floor(Math.random() * 450) + 50 + " KB";
+        this.hiddenFileSize.value = fakeSize;
+        console.log("test")
+    }
+
+    
+
+
+
+}
 
 class DataManager {
     static saveData(key, value) {
@@ -273,8 +305,10 @@ class DynamicTable {
         }
 
         this.data.forEach((row, index) => {
+           
             const tr = document.createElement("tr");
             this.columns.forEach((col) => {
+                console.log(row, col);
                 tr.innerHTML += `<td>${row[col] || "N/A"}</td>`;
             });
 
@@ -357,7 +391,6 @@ class DynamicTable {
         this.lightbox.classList.remove("open");
     }
 }
-
 
 class FormLightbox {
     constructor(lightbox){
