@@ -217,7 +217,7 @@ class Step5Handler {
             "tb-upload-doc", 
             "uploaddoc-lightbox", 
             "uploadedDocuments", 
-            ["name", "description", "size"]
+            ["s5-filename", "s5-desc", "s5-size"]
         );    
         
         this.browseFileButton = document.getElementById("s5-browsebtn");
@@ -250,7 +250,6 @@ class Step5Handler {
 
         const fakeSize = Math.floor(Math.random() * 450) + 50 + " KB";
         this.hiddenFileSize.value = fakeSize;
-        console.log("test")
     }
 
     
@@ -308,14 +307,13 @@ class DynamicTable {
            
             const tr = document.createElement("tr");
             this.columns.forEach((col) => {
-                console.log(row, col);
                 tr.innerHTML += `<td>${row[col] || "N/A"}</td>`;
             });
 
             tr.innerHTML += `
                 <td>
-                    <button class="btn-tertiary edit-btn" data-index="${index}"><span class="material-icons">edit</span>Edit</button>
-                    <button class="btn-tertiary delete-btn" data-index="${index}">
+                    <button type="button" class="btn-tertiary edit-btn" data-index="${index}"><span class="material-icons">edit</span>Edit</button>
+                    <button type="button" class="btn-tertiary delete-btn" data-index="${index}">
                     <span class="material-icons">close</span>Delete</button>
                 </td>
             `;
@@ -326,12 +324,16 @@ class DynamicTable {
         // Attach event listeners for edit and delete buttons
         this.tbody.querySelectorAll(".edit-btn").forEach((btn) => {
             btn.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
                 this.editRow(event.target.dataset.index);
             });
         });
 
         this.tbody.querySelectorAll(".delete-btn").forEach((btn) => {
             btn.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
                 this.deleteRow(event.target.dataset.index);
             });
         });
@@ -346,20 +348,21 @@ class DynamicTable {
     }
 
     editRow(index) {
-        const rowData = this.data[index];
+        console.log("Edit")
+        //const rowData = this.data[index];
 
         // Pre-fill the form fields in the lightbox
-        const form = this.lightbox.querySelector("form");
-        Object.keys(rowData).forEach((key) => {
-            const input = form.querySelector(`[name="${key}"]`);
-            if (input) input.value = rowData[key];
-        });
+        // const form = this.lightbox.querySelector("form");
+        // Object.keys(rowData).forEach((key) => {
+        //     const input = form.querySelector(`[name="${key}"]`);
+        //     if (input) input.value = rowData[key];
+        // });
 
-        // Store the row index being edited
-        this.lightbox.dataset.editIndex = index;
+        // // Store the row index being edited
+        // this.lightbox.dataset.editIndex = index;
 
-        // Open the lightbox
-        this.openLightbox();
+        // // Open the lightbox
+        // this.openLightbox();
     }
 
     saveRow(formData) {
@@ -374,7 +377,6 @@ class DynamicTable {
 
         DataManager.saveData(this.storageKey, this.data);
         this.populateTable();
-        this.closeLightbox();
     }
 
     deleteRow(index) {
@@ -383,13 +385,6 @@ class DynamicTable {
         this.populateTable();
     }
 
-    openLightbox() {
-        this.lightbox.classList.add("open");
-    }
-
-    closeLightbox() {
-        this.lightbox.classList.remove("open");
-    }
 }
 
 class FormLightbox {
@@ -415,7 +410,7 @@ class FormLightbox {
             this.submitButton.addEventListener('click', (event) => {
                 event.preventDefault();
                 this.sendFormData();
-                this.closeLightbox();
+                
             });
         }
     }
@@ -436,10 +431,13 @@ class FormLightbox {
 
         // Emit an event with the form data
         document.dispatchEvent(new CustomEvent("lightboxSubmitted", {
+            
             detail: {
                 lightboxId: this.lightbox.id,
                 formData: dataObj
             }
+            
+
         }));
     }
 }
