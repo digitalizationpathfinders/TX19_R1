@@ -3,7 +3,9 @@ class Stepper {
     constructor(stepSelector) {
         this.steps = Array.from(document.querySelectorAll(stepSelector));
         this.activeStep = this.steps.find(step => step.classList.contains('active'));
+        
         this.stepHandlers = {}; // Store step instances
+        this.customStepCode(this.steps.indexOf(this.activeStep))
     }
 
     adjustMaxHeight(step) {
@@ -213,23 +215,14 @@ class Step3Handler {
 
 class Step5Handler {
     constructor() {
-        this.dynamicTable = new DynamicTable(
-            "tb-upload-doc", 
-            "uploaddoc-lightbox", 
-            "uploadedDocuments", 
-            ["s5-filename", "s5-desc", "s5-size"]
-        );    
-        
+        this.tempData = null; // Temporary storage for lightbox data
+        this.documentsTable = new TableObj("tb-upload-doc");
+
         this.browseFileButton = document.getElementById("s5-browsebtn");
         this.fileNameDisplay = document.getElementById("s5-filename-display");
         this.hiddenFileInput = document.getElementById("s5-filename");
         this.hiddenFileSize = document.getElementById("s5-size");
 
-        this.fileUpload();
-        //this.listenForLightboxSubmit();
-    }
-
-    fileUpload() {
         if(!this.browseFileButton) return;
 
         this.fakeFileNames = [
@@ -240,9 +233,20 @@ class Step5Handler {
         ];
 
         this.browseFileButton.addEventListener("click", () => this.selectFile());
-       
+
+        document.addEventListener("lightboxSubmitted", (event) => {
+            if (event.detail.lightboxId === "uploaddoc-lightbox") {
+                this.handleFormSubmit(event.detail.formData);
+            }
+        });
+        // Listen for edit events
+        document.addEventListener("editRowEvent", (event) => {
+            if (event.detail.tableID === "tb-upload-doc") {
+                this.openEditLightbox(event.detail.index, event.detail.rowData);
+            }
+        });
     }
-    selectFile() {
+    selectFile(){
         this.selectedFileName = this.fakeFileNames[Math.floor(Math.random() * this.fakeFileNames.length)];
 
         this.fileNameDisplay.textContent = this.selectedFileName;
@@ -252,10 +256,126 @@ class Step5Handler {
         this.hiddenFileSize.value = fakeSize;
     }
 
-    
+    openEditLightbox(index, rowData) {
+        const lightbox = document.getElementById("uploaddoc-lightbox");
+        if (!lightbox) return;
 
+        // Store the row index in the lightbox for reference
+        lightbox.dataset.editIndex = index;
 
+        // Fill the form fields with existing row data
+        const form = lightbox.querySelector("form");
+        if (!form) return;
 
+        Object.keys(rowData).forEach((key) => {
+            const input = form.querySelector(`[name="${key}"]`);
+            if (input) input.value = rowData[key];
+        });
+
+        //heres where it needs to call the lightbox's "open" function, maybe needto make reference to the lightbox OBJ itself rather than the HTML element
+    }
+
+    handleFormSubmit(formData) {
+        const lightbox = document.getElementById("uploaddoc-lightbox");
+        if (!lightbox) return;
+
+        const editIndex = lightbox.dataset.editIndex;
+
+        if (editIndex !== undefined) {
+            this.documentsTable.rows[editIndex] = formData; // Update existing row
+            lightbox.dataset.editIndex = ""; // Clear edit index
+            this.documentsTable.refreshTable(); // Refresh table to reflect changes
+        } else {
+            this.documentsTable.addRow(formData); // Add new row
+        }
+    }
+}
+
+class TableObj {
+    constructor (tableID) {
+        this.table = document.getElementById(tableID);
+        this.tbody = this.table.querySelector("tbody");
+        this.defaultText = this.tbody.dataset.placeholder;
+        this.columnCount = this.table.querySelector("thead tr").children.length;
+        this.rows = []; // Store data for easier access
+
+       // Initialize the table with placeholder text if empty
+       this.renderEmptyTable();
+    }
+    renderEmptyTable() {
+        this.tbody.innerHTML = `<tr><td colspan="${this.columnCount + 1}" style="text-align:center;">${this.defaultText}</td></tr>`;
+    }
+    addRow(data) {
+        // If the table is displaying the default placeholder row, clear it
+        if (this.tbody.querySelector("tr") && this.tbody.querySelector("tr").cells.length === 1) {
+            this.tbody.innerHTML = "";
+        }
+        const rowIndex = this.rows.length; // Get index for reference
+        this.rows.push(data); // Store the row data for editing
+
+        // Create a new row
+        const tr = document.createElement("tr");
+
+        // Populate row with data
+        Object.values(data).forEach((value) => {
+            const td = document.createElement("td");
+            td.textContent = value || "N/A"; // Handle empty fields
+            tr.appendChild(td);
+        });
+
+        // Actions column (placeholder for buttons)
+        const actionTd = document.createElement("td");
+        actionTd.innerHTML = `
+            <button type="button" class="btn-tertiary edit-btn" data-index="${rowIndex}"><span class="material-icons">edit</span>Edit</button>
+            <button type="button" class="btn-tertiary delete-btn" data-index="${rowIndex}"><span class="material-icons">close</span>Delete</button>
+        `;
+        tr.appendChild(actionTd);
+
+        // Append row to table
+        this.tbody.appendChild(tr);
+
+        // Attach event listeners
+        actionTd.querySelector(".edit-btn").addEventListener("click", (event) => {
+            this.emitEditEvent(event.target.closest(".edit-btn").dataset.index);
+        });
+
+        actionTd.querySelector(".delete-btn").addEventListener("click", (event) => {
+            this.deleteRow(event.target.closest(".delete-btn").dataset.index);
+        });
+
+    }
+
+    emitEditEow(index) {
+        index = parseInt(index);
+        if (!this.rows[index]) return;
+
+        console.log(`Emitting event to edit row ${index}`, this.rows[index]);
+
+        // Dispatch an event so Step5Handler (or other handlers) can respond
+        document.dispatchEvent(new CustomEvent("editRowEvent", {
+            detail: {
+                tableID: this.table.id,
+                index: index,
+                rowData: this.rows[index]
+            }
+        }));
+    }
+    deleteRow(index) {
+        index = parseInt(index);
+        this.rows.splice(index, 1);
+        this.refreshTable();
+    }
+
+    refreshTable() {
+        this.tbody.innerHTML = "";
+        if (this.rows.length === 0) {
+            this.renderEmptyTable();
+            return;
+        }
+        this.rows.forEach((rowData, index) => {
+            this.addRow(rowData);
+        });
+    }
 }
 
 class DataManager {
@@ -280,112 +400,6 @@ class DataManager {
     }
 }
 
-class DynamicTable {
-    constructor(tableID, lightboxID, storageKey, columns) {
-        this.table = document.getElementById(tableID);
-        this.tbody = this.table.querySelector("tbody");
-        this.defaultText = this.tbody.dataset.placeholder;
-        this.lightbox = document.getElementById(lightboxID);
-        this.storageKey = storageKey;
-        this.columns = columns; // Array of column keys (e.g., ["name", "description", "size"])
-        
-        this.data = DataManager.getData(this.storageKey) || [];
-
-        this.populateTable();
-        this.setupLightboxEvents();
-    }
-
-    populateTable() {
-        this.tbody.innerHTML = ""; // Clear the table first
-
-        if (this.data.length === 0) {
-            this.tbody.innerHTML = `<tr><td colspan="${this.columns.length + 1}" style="text-align:center;">${this.defaultText}</td></tr>`;
-            return;
-        }
-
-        this.data.forEach((row, index) => {
-           
-            const tr = document.createElement("tr");
-            this.columns.forEach((col) => {
-                tr.innerHTML += `<td>${row[col] || "N/A"}</td>`;
-            });
-
-            tr.innerHTML += `
-                <td>
-                    <button type="button" class="btn-tertiary edit-btn" data-index="${index}"><span class="material-icons">edit</span>Edit</button>
-                    <button type="button" class="btn-tertiary delete-btn" data-index="${index}">
-                    <span class="material-icons">close</span>Delete</button>
-                </td>
-            `;
-
-            this.tbody.appendChild(tr);
-        });
-
-        // Attach event listeners for edit and delete buttons
-        this.tbody.querySelectorAll(".edit-btn").forEach((btn) => {
-            btn.addEventListener("click", (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                this.editRow(event.target.dataset.index);
-            });
-        });
-
-        this.tbody.querySelectorAll(".delete-btn").forEach((btn) => {
-            btn.addEventListener("click", (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                this.deleteRow(event.target.dataset.index);
-            });
-        });
-    }
-
-    setupLightboxEvents() {
-        document.addEventListener("lightboxSubmitted", (event) => {
-            if (event.detail.lightboxId === this.lightbox.id) {
-                this.saveRow(event.detail.formData);
-            }
-        });
-    }
-
-    editRow(index) {
-        console.log("Edit")
-        //const rowData = this.data[index];
-
-        // Pre-fill the form fields in the lightbox
-        // const form = this.lightbox.querySelector("form");
-        // Object.keys(rowData).forEach((key) => {
-        //     const input = form.querySelector(`[name="${key}"]`);
-        //     if (input) input.value = rowData[key];
-        // });
-
-        // // Store the row index being edited
-        // this.lightbox.dataset.editIndex = index;
-
-        // // Open the lightbox
-        // this.openLightbox();
-    }
-
-    saveRow(formData) {
-        const editIndex = this.lightbox.dataset.editIndex;
-
-        if (editIndex !== undefined) {
-            this.data[editIndex] = formData; // Update existing row
-            delete this.lightbox.dataset.editIndex;
-        } else {
-            this.data.push(formData); // Add new row
-        }
-
-        DataManager.saveData(this.storageKey, this.data);
-        this.populateTable();
-    }
-
-    deleteRow(index) {
-        this.data.splice(index, 1);
-        DataManager.saveData(this.storageKey, this.data);
-        this.populateTable();
-    }
-
-}
 
 class FormLightbox {
     constructor(lightbox){
@@ -395,12 +409,17 @@ class FormLightbox {
         this.submitButton = this.lightbox.querySelector('[data-submit]');
        
         if(this.openTrigger){
-            this.openTrigger.addEventListener('click', () => this.openLightbox());
+            this.openTrigger.addEventListener('click', () => {
+                this.openLightbox();
+                this.clearFormData();
+            });
             var buttonText = document.createTextNode(this.openTrigger.value);
+            
             this.openTrigger.appendChild(buttonText)
         }
         this.initializeEventListeners();
     }
+    
     initializeEventListeners() {
         this.lightbox.querySelectorAll('[data-closebtn]').forEach(btn => {
             btn.addEventListener('click', () => this.closeLightbox());
@@ -421,25 +440,42 @@ class FormLightbox {
     closeLightbox() {
         this.lightbox.classList.remove('open');
     }
-    sendFormData() {
+
+    clearFormData() {
+        if (!this.form) return;
+        this.form.querySelectorAll("input, select, textarea").forEach(input => {
+            if (input.type === "checkbox" || input.type === "radio") {
+                input.checked = false;
+            } else {
+                input.value = "";
+            }
+        });
+        // Reset spans with data-formelement
+        this.form.querySelectorAll("[data-formelement]").forEach(span => {
+        span.textContent = span.dataset.placeholder || "";
+        });
+    }
+
+
+    sendFormData(){
         const formData = new FormData(this.form);
         let dataObj = {};
-
+    
         formData.forEach((value, key) => {
             dataObj[key] = value;
         });
-
+    
         // Emit an event with the form data
         document.dispatchEvent(new CustomEvent("lightboxSubmitted", {
-            
             detail: {
                 lightboxId: this.lightbox.id,
                 formData: dataObj
             }
-            
-
         }));
+    
+        this.closeLightbox();
     }
+   
 }
 
 class ProgressiveDisclosure {
@@ -617,12 +653,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
 });
-
-
-
-
-
-
 
 window.addEventListener('beforeunload', () => {
     sessionStorage.clear();

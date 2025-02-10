@@ -580,13 +580,14 @@
                                     <label for="s5lb-upload" class="required-label">Upload your document</label>
                                     Allowable file types: .pdf, .doc, .docx, .xls, .xlsx, .rtf, .txt, .jpg, .jpeg, .tiff, .tif, .xps
                                     <br><button id="s5-browsebtn" type="button" class="btn-secondary">Browse</button>
-                                    <span class="fileName" id="s5-filename-display">No file chosen.</span>
+                                    <span class="fileName" id="s5-filename-display" data-formelement data-placeholder="No file chosen.">No file chosen.</span>
 
                                     <input type="hidden" id="s5-filename" name="s5-filename">
-                                    <input type="hidden" id="s5-size" name="s5-size">
+                                    
                                     
                                     <label for="s5lb-descfield" class="required-label">Provide a brief description of your document (maximum 150 characters).</label>
                                     <input type="text" id="s5-desc" name="s5-desc" maxlength="150" required>
+                                    <input type="hidden" id="s5-size" name="s5-size">
                                 </form>
                             </div>
                             <div class="buttons">
