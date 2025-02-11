@@ -274,7 +274,7 @@
                 </div>
             </section>
        
-            <section class="step" id="step-3">
+            <section class="step active" id="step-3">
                 <div class="step-header">
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
@@ -286,44 +286,9 @@
                         <form id="step-3-form">
                             <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
                             <br>
-                            <div id="legalrep-panel-container"></div>
-                            <!-- <div id="legalrep-panel" class="panel level3">
-                               
-                                <div class="heading-row">
-                                    <h5>Legal representative</h5>
-                                    <a class="level2"> 
-                                        <span class="material-icons">
-                                        edit
-                                        </span>
-                                        Edit
-                                    </a>
-                                </div>
-                                <table class="panel-data">
-                                   
-                                    <tr class="row">
-                                        <td class="label">Name</td>
-                                        <td class="value">(taxpayer name)</td>
-                                    </tr>
-                                    <tr class="row">
-                                        <td class="label">Mailing address</td>
-                                        <td class="value" id="rep">
-                                            <p>
-                                                123 Anywhere Ave<br>
-                                                New York, NY 12345<br>
-                                                United States of America
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr class="row">
-                                        <td class="label">Telephone number</td>
-                                        <td class="value">(123) 456-7890</td>
-                                    </tr>
-                                    <tr class="row">
-                                        <td class="label">Role</td>
-                                        <td class="value">Executor</td>
-                                    </tr>
-                                </table>
-                            </div> -->
+                            <div id="legalrep-container">
+                                <div id="legalrep-panel-container"></div>
+
                             <div class="alert" id="alert-mailing">
                                 <div class="alert-info">
                                     <div class="line"></div>
@@ -337,6 +302,22 @@
                                     The clearance certificate will be mailed to the above address.
                                 </div>
                             </div>
+                            <fieldset id="legalrepinfo-fieldset">
+                            <label class="required-label" for="s3-reptel1">Telephone number</label>
+                                                <input type="text" id="s3-reptel1" name="s3-reptel1">
+                            <label class="required-label" for="s3-reprole">Role</label>
+                            <select id="s3-reprole" name="s3-reprole">
+                                <option value="Select" selected>(Select)</option>
+                                <option value="saab">Saab</option>
+                                <option value="fiat">Fiat</option>
+                                <option value="audi">Audi</option>
+                            </select>
+                            </fieldset>
+
+                        </div><br>
+                        <div id="mailrecip-container"></div>
+                           
+                            
                             <div class="alert" id="alert-norep">
                                 <div class="alert-warning">
                                     <div class="line"></div>
@@ -419,9 +400,21 @@
                                                         <label class="required-label" for="s3-repprov">Province</label>
                                                         <select id="s3-repprov" name="s3-repprov">
                                                             <option value="Select" selected>(Select)</option>
-                                                            <option value="saab">Saab</option>
-                                                            <option value="fiat">Fiat</option>
-                                                            <option value="audi">Audi</option>
+                                                            <option value="Alberta">Alberta</option>
+                                                            <option value="British Columbia">British Columbia</option>
+                                                            <option value="Manitoba">Manitoba</option>
+                                                            <option value="New Brunswick">New Brunswick</option>
+                                                            <option value="Newfoundland and Labrador">Newfoundland and Labrador</option>
+                                                            <option value="Northwest Territories">Northwest Territories</option>
+                                                            <option value="Nova Scotia">Nova Scotia</option>
+                                                            <option value="Nunavut">Nunavut</option>
+                                                            <option value="Ontario">Ontario</option>
+                                                            <option value="Prince Edward Island">Prince Edward Island</option>
+                                                            <option value="Quebec">Quebec</option>
+                                                            <option value="Saskatchewan">Saskatchewan</option>
+                                                            <option value="Yukon">Yukon</option>
+
+
                                                         </select>
                                                     </div>
                                                     <div>
@@ -505,7 +498,7 @@
                 </div>
             </section>
 
-            <section class="step active" id="step-5">
+            <section class="step" id="step-5">
                 <div class="step-header">
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>

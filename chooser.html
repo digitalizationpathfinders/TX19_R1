@@ -1,4 +1,97 @@
-Choose flow:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Task</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2>Select a Task</h2>
+    <button onclick="chooseTask(1)">Task 1</button>
+    <button onclick="chooseTask(2)">Task 2</button>
+    <button onclick="chooseTask(3)">Task 3</button>
+    <button onclick="chooseTask(4)">Task 4</button>
+    <button onclick="chooseTask(5)">Task 5</button>
 
-<button>Level 2 Rep</button>
-<button>Level 3 Rep</button>
+    <script>
+        function chooseTask(taskNumber) {
+            const tasks = {
+                1: {
+                    deceasedInfo: {
+                        name: "John Smith",
+                        sin: "*** *** 123",
+                        dateOfDeath: "2023-06-10"
+                    },
+                    userLevel: 2
+                },
+                2: {
+                    deceasedInfo: {
+                        name: "Jane Doe",
+                        sin: "*** *** 234",
+                        dateOfDeath: "2022-12-15"
+                    },
+                    userLevel: 3,
+                    legalRepresentative: {
+                        name: "Alice Johnson",
+                        address: "456 Elm Street<br>Ottawa, Ontario K1A 0B1<br>Canada"
+                    }
+                },
+                3: {
+                    deceasedInfo: {
+                        name: "Michael Brown",
+                        sin: "*** *** 345",
+                        dateOfDeath: "2021-09-25"
+                    },
+                    userLevel: 2
+                },
+                4: {
+                    deceasedInfo: {
+                        name: "Emily White",
+                        sin: "*** *** 456",
+                        dateOfDeath: "2024-01-05"
+                    },
+                    userLevel: 3,
+                    legalRepresentative: {
+                        name: "Robert Green",
+                        address: "789 Pine Avenue<br>Vancouver, BC V5K 1A1<br>Canada"
+                    }
+                },
+                5: {
+                    deceasedInfo: {
+                        name: "William Taylor",
+                        sin: "*** *** 567",
+                        dateOfDeath: "2023-04-20"
+                    },
+                    userLevel: 3,
+                    legalRepresentative: {
+                        name: "Laura Wilson",
+                        address: "321 Birch Road<br>Calgary, Alberta T2P 0L4<br>Canada"
+                    }
+                }
+            };
+
+            // Store the selected task's data in sessionStorage
+            sessionStorage.setItem("selectedTask", JSON.stringify(tasks[taskNumber]));
+
+            // Redirect to main index page
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

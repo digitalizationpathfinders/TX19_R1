@@ -1,14 +1,15 @@
-
 class Stepper {
     constructor(stepSelector) {
         this.steps = Array.from(document.querySelectorAll(stepSelector));
         this.activeStep = this.steps.find(step => step.classList.contains('active'));
-        
+        this.observeStepContentChanges(); 
+
         this.stepHandlers = {}; // Store step instances
         this.customStepCode(this.steps.indexOf(this.activeStep))
     }
 
     adjustMaxHeight(step) {
+        if (!step) return;
         const stepContent = step.querySelector('.step-content');
         if (stepContent) {
             stepContent.style.maxHeight = stepContent.scrollHeight + 'px';
@@ -36,6 +37,23 @@ class Stepper {
         this.customStepCode(this.steps.indexOf(this.activeStep))
 
         //this.adjustMaxHeight(step); //hiding this fixed the accordion issue, unknown other effects/imapcts though
+    }
+
+    observeStepContentChanges() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === "childList") {
+                    this.adjustMaxHeight(this.activeStep); // ✅ Auto-adjust height when new elements are added
+                }
+            });
+        });
+
+        this.steps.forEach(step => {
+            const stepContent = step.querySelector('.step-content');
+            if (stepContent) {
+                observer.observe(stepContent, { childList: true, subtree: true });
+            }
+        });
     }
 
 
@@ -104,27 +122,36 @@ class Stepper {
 
 class Step3Handler {
     constructor() {
+        this.userLevel = parseInt(DataManager.getData("userLevel")) || 2;
+        this.legalRep = DataManager.getData("legalRepresentative") || null;
+
+
+        // if(this.userLevel === 3 && !this.legalRep) {
+        //     this.prepopulateForLevel3();
+        // }
+        this.addRepLightbox = new FormLightbox(document.getElementById("addlegalrep-lightbox"));
+
         this.repPanelContainer = document.getElementById("legalrep-panel-container");
+        this.mailRecipContainer = document.getElementById("mailrecip-container");
+        this.legalRepInfoFieldset = document.querySelector("#legalrepinfo-fieldset");
         this.warningAlert = document.getElementById("alert-norep");
         this.infoAlert = document.getElementById("alert-mailing");
         this.lightboxHeader = document.querySelector('#addlegalrep-lightbox .header h3');
         this.lightboxButton = document.querySelector('#addlegalrep-lightbox [data-submit]');
         this.addRepButton = document.querySelector('[data-togglelb="addlegalrep-lightbox"]');
 
-        this.userLevel = parseInt(DataManager.getData("userLevel")) || 2;
-        this.legalRep = DataManager.getData("legalRepresentative") || null;
         this.mailRecipients = DataManager.getData("mailRecipients") || [];
 
-        this.prepopulateForLevel3();
         this.updateRepresentativePanels();
 
         // Listen for lightbox submissions
         document.addEventListener("lightboxSubmitted", (event) => {
             if (event.detail.lightboxId === "addlegalrep-lightbox") {
-                this.addMailRecipient(event.detail.formData);
+                this.handleFormSubmit(event.detail.formData);
             }
         });
 
+        // Listen for data updates (to react to storage changes)
         document.addEventListener("dataUpdated", (event) => {
             if (event.detail.key === "legalRepresentative" || event.detail.key === "mailRecipients") {
                 this.legalRep = DataManager.getData("legalRepresentative");
@@ -134,34 +161,17 @@ class Step3Handler {
         });
     }
 
-    prepopulateForLevel3() {
-        if (this.userLevel === 3 && !this.legalRep) {
-            //START HERE - formatting of the address with line breaks and the entered one does not include the mailing address and it also only accounts for level 3, not level 2
-            const defaultRep = {
-                name: "John Doe",
-                role: "Executor",
-                address: "123 Main Street<br>Toronto, Ontario A1A 1A1<br>Canada",
-                phone: "(123) 456-7890",
-                altPhone: "(098) 765-4321"
-            };
+    handleFormSubmit(formData) {
+        const editIndex = this.addRepLightbox.getEditIndex();
 
-            DataManager.saveData("legalRepresentative", defaultRep);
-            this.legalRep = defaultRep;
-        }
-    }
-
-    addMailRecipient(formData) {
         let address = " ";
-
-        // Determine the correct address fields based on selected country
         if (formData["s3-country"] === "Canada") {
             address = `${formData["s3-caddress"]}<br>${formData["s3-repcity"]}, ${formData["s3-repprov"]} ${formData["s3-reppostcode"]}<br>Canada`;
         } else if (formData["s3-country"] === "Outside of Canada") {
             address = `${formData["s3-iaddress"]}`;
         }
 
-
-        const newRecipient = {
+        const newRepresentative = {
             name: formData["s3-repname"] || " ",
             role: formData["s3-reprole"] || " ",
             address: address,
@@ -169,35 +179,59 @@ class Step3Handler {
             altPhone: formData["s3-reptel2"] || " "
         };
 
-        DataManager.appendToArray("mailRecipients", newRecipient);
+        if (!this.legalRep) {
+            // If no legal rep is set, this is the legal representative
+            DataManager.saveData("legalRepresentative", newRepresentative);
+        } else {
+            // Otherwise, it's an additional mail recipient
+            this.mailRecipients.push(newRepresentative);
+            DataManager.saveData("mailRecipients", this.mailRecipients);
+        }
+
+        this.updateRepresentativePanels();
     }
 
     updateRepresentativePanels() {
         this.repPanelContainer.innerHTML = "";
+        this.mailRecipContainer.innerHTML = ""; 
        
         if (this.legalRep) {
-            this.warningAlert.classList.add("hidden");
-            this.infoAlert.classList.remove("hidden");
-            this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
-            this.lightboxHeader.textContent = "Add additional mail recipient"
-
-            this.createRepresentativePanel(this.legalRep, "Legal Representative");
+            // State 3: Level 3 User (Legal Rep on File) - Show Name & Address only, but keep fieldset visible
+            if (this.userLevel === 3) {
+                this.warningAlert.classList.add("hidden");
+                this.infoAlert.classList.remove("hidden");
+                this.legalRepInfoFieldset.classList.remove("hidden"); // Show fieldset for phone + role collection
+                this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
+                this.createRepresentativePanel(this.legalRep, "Legal Representative", true, false); // Show name & address only
+            } 
+            // State 2: Level 2 User (Legal Rep Just Added) - Show all fields, hide fieldset
+            else {
+                this.warningAlert.classList.add("hidden");
+                this.infoAlert.classList.remove("hidden");
+                this.legalRepInfoFieldset.classList.add("hidden"); // Hide fieldset
+                this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
+                this.createRepresentativePanel(this.legalRep, "Legal Representative", true, true); // Show all data
+            }
         } else {
+            // State 1: No Legal Rep - Show warning, hide info banner, set button for adding legal rep
             this.warningAlert.classList.remove("hidden");
             this.infoAlert.classList.add("hidden");
+            this.legalRepInfoFieldset.classList.add("hidden");
             this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add legal representative information`;
-             this.lightboxHeader.textContent = "Add legal representative information"
         }
 
         this.mailRecipients.forEach((recipient, index) => {
             this.createRepresentativePanel(recipient, `Mail Recipient ${index + 1}`);
         });
+
+     
     }
 
-    createRepresentativePanel(rep, title) {
+    createRepresentativePanel(rep, title, isLegalRep = false, showFullDetails = true) {
         const panel = document.createElement("div");
         panel.classList.add("panel");
-
+    
+        // Show Name & Address only (Level 3) OR Show all fields (Level 2)
         panel.innerHTML = `
             <div class="heading-row">
                 <h5>${title}</h5>
@@ -205,11 +239,18 @@ class Step3Handler {
             <table class="panel-data">
                 <tr><td class="label">Name</td><td>${rep.name}</td></tr>
                 <tr><td class="label">Mailing Address</td><td>${rep.address}</td></tr>
+                ${showFullDetails ? `
                 <tr><td class="label">Primary Phone</td><td>${rep.phone}</td></tr>
                 <tr><td class="label">Alternate Phone</td><td>${rep.altPhone}</td></tr>
+                <tr><td class="label">Role</td><td>${rep.role}</td></tr>` : ""}
             </table>
         `;
-        this.repPanelContainer.appendChild(panel);
+
+        if (isLegalRep) {
+            this.repPanelContainer.appendChild(panel);
+        } else {
+            this.mailRecipContainer.appendChild(panel);
+        }
     }
 }
 
@@ -217,6 +258,7 @@ class Step5Handler {
     constructor() {
         this.tempData = null; // Temporary storage for lightbox data
         this.documentsTable = new TableObj("tb-upload-doc");
+        this.uploadDocLightbox = new FormLightbox(document.getElementById("uploaddoc-lightbox"));
 
         this.browseFileButton = document.getElementById("s5-browsebtn");
         this.fileNameDisplay = document.getElementById("s5-filename-display");
@@ -257,38 +299,38 @@ class Step5Handler {
     }
 
     openEditLightbox(index, rowData) {
-        const lightbox = document.getElementById("uploaddoc-lightbox");
-        if (!lightbox) return;
+       
+        // Set the index of the row being edited
+        this.uploadDocLightbox.setEditIndex(index);
 
-        // Store the row index in the lightbox for reference
-        lightbox.dataset.editIndex = index;
+        // Fill form with existing row data
+        this.uploadDocLightbox.populateForm(rowData);
+         // Manually update filename span
+        if (rowData["s5-filename"]) {
+            const filenameDisplay = document.getElementById("s5-filename-display");
+        if (filenameDisplay) {
+            filenameDisplay.textContent = rowData["s5-filename"];
+        }
+    }
 
-        // Fill the form fields with existing row data
-        const form = lightbox.querySelector("form");
-        if (!form) return;
-
-        Object.keys(rowData).forEach((key) => {
-            const input = form.querySelector(`[name="${key}"]`);
-            if (input) input.value = rowData[key];
-        });
-
-        //heres where it needs to call the lightbox's "open" function, maybe needto make reference to the lightbox OBJ itself rather than the HTML element
+        // Open the lightbox
+        this.uploadDocLightbox.openLightbox();
     }
 
     handleFormSubmit(formData) {
-        const lightbox = document.getElementById("uploaddoc-lightbox");
-        if (!lightbox) return;
-
-        const editIndex = lightbox.dataset.editIndex;
-
-        if (editIndex !== undefined) {
-            this.documentsTable.rows[editIndex] = formData; // Update existing row
-            lightbox.dataset.editIndex = ""; // Clear edit index
-            this.documentsTable.refreshTable(); // Refresh table to reflect changes
+    
+        const editIndex = this.uploadDocLightbox.getEditIndex();
+    
+        if (editIndex !== null && editIndex !== undefined && editIndex !== "") {
+            this.documentsTable.rows[editIndex] = formData;
+            this.uploadDocLightbox.clearEditIndex();
+            this.documentsTable.refreshTable();
         } else {
-            this.documentsTable.addRow(formData); // Add new row
+            this.documentsTable.addRow(formData);
         }
     }
+    
+    
 }
 
 class TableObj {
@@ -345,11 +387,9 @@ class TableObj {
 
     }
 
-    emitEditEow(index) {
+    emitEditEvent(index) {
         index = parseInt(index);
         if (!this.rows[index]) return;
-
-        console.log(`Emitting event to edit row ${index}`, this.rows[index]);
 
         // Dispatch an event so Step5Handler (or other handlers) can respond
         document.dispatchEvent(new CustomEvent("editRowEvent", {
@@ -367,15 +407,18 @@ class TableObj {
     }
 
     refreshTable() {
-        this.tbody.innerHTML = "";
+        this.tbody.innerHTML = ""; // Clear the table
+    
         if (this.rows.length === 0) {
             this.renderEmptyTable();
             return;
         }
+    
         this.rows.forEach((rowData, index) => {
             this.addRow(rowData);
         });
     }
+    
 }
 
 class DataManager {
@@ -400,13 +443,13 @@ class DataManager {
     }
 }
 
-
 class FormLightbox {
     constructor(lightbox){
         this.lightbox = lightbox;
         this.form = this.lightbox.querySelector('form');
         this.openTrigger = document.querySelector(`[data-togglelb="${lightbox.id}"]`);
         this.submitButton = this.lightbox.querySelector('[data-submit]');
+        this.editIndex = null;
        
         if(this.openTrigger){
             this.openTrigger.addEventListener('click', () => {
@@ -439,6 +482,7 @@ class FormLightbox {
 
     closeLightbox() {
         this.lightbox.classList.remove('open');
+        this.clearEditIndex();
     }
 
     clearFormData() {
@@ -455,17 +499,22 @@ class FormLightbox {
         span.textContent = span.dataset.placeholder || "";
         });
     }
+    populateForm(data) {
+        if (!this.form) return;
+        Object.keys(data).forEach((key) => {
+            const input = this.form.querySelector(`[name="${key}"]`);
+            if (input) input.value = data[key];
+        });
+    }
 
-
-    sendFormData(){
+    sendFormData() {
         const formData = new FormData(this.form);
         let dataObj = {};
     
         formData.forEach((value, key) => {
             dataObj[key] = value;
         });
-    
-        // Emit an event with the form data
+        
         document.dispatchEvent(new CustomEvent("lightboxSubmitted", {
             detail: {
                 lightboxId: this.lightbox.id,
@@ -474,6 +523,17 @@ class FormLightbox {
         }));
     
         this.closeLightbox();
+    }
+    
+    setEditIndex(index) {
+        this.editIndex = index;
+    }
+
+    getEditIndex() {
+        return this.editIndex;
+    }
+    clearEditIndex() {
+        this.editIndex = null;
     }
    
 }
@@ -581,11 +641,25 @@ class ProgressiveDisclosure {
 
 }
 
-
 document.addEventListener('DOMContentLoaded', () => {
 
-    DataManager.saveData("userLevel", "3");
+    let taskData = sessionStorage.getItem("selectedTask");
 
+    if (!taskData) {
+        // If user somehow lands here without choosing a task, redirect them back
+        window.location.href = "chooser.html";
+    } else {
+        taskData = JSON.parse(taskData);
+        console.log("Loaded Task Data:", taskData);
+
+        // Store data for use in other scripts
+        DataManager.saveData("deceasedInfo", taskData.deceasedInfo);
+        DataManager.saveData("userLevel", taskData.userLevel);
+
+        if (taskData.legalRepresentative) {
+            DataManager.saveData("legalRepresentative", taskData.legalRepresentative);
+        }
+    }
 
     // Initialize Stepper
     const stepper = new Stepper('.step');
@@ -634,7 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   
     //document.querySelectorAll('.dynamic-table').forEach(table => { new DynamicTable(table.id) });
-    document.querySelectorAll('.lightbox-container').forEach(lb => new FormLightbox(lb));
+    //document.querySelectorAll('.lightbox-container').forEach(lb => new FormLightbox(lb));
 
 
     //Accordion functionality
