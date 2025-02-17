@@ -459,16 +459,67 @@ class Step6Handler {
                 reviewPanel: true
             });
         });
-    
+        this.loadSupportingDocuments();
+
         // Listen for edit button clicks
         document.addEventListener("editPanelEvent", (event) => {
             this.stepper.setActive(this.stepper.steps[event.detail.index]);
         });
     }
 
+    loadSupportingDocuments() {
+        let documents = DataManager.getData("stepData_5");
 
-    
-    
+        // Create a panel for "Attachments"
+        const attachmentsPanel = document.createElement("div");
+        attachmentsPanel.classList.add("panel");
+        attachmentsPanel.innerHTML = `
+            <div class="heading-row">
+                <h5>Attachments</h5>
+                <button type="button" class="btn-tertiary edit-btn" data-index="5"><span class="material-icons">edit</span>Edit</button>
+            </div>
+            <table class="panel-data">
+                <tr><td class="label">Attachments</td><td></td></tr>
+            </table>
+            <table cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Size</th>
+                    </tr>
+                </thead>
+                <tbody id="attachments-table-body">
+                    <!-- Documents will be dynamically inserted here -->
+                </tbody>
+            </table>
+        `;
+
+        this.reviewContainer.appendChild(attachmentsPanel);
+
+        // Populate the table with uploaded files
+        if (documents && Array.isArray(documents)) {
+            const tableBody = attachmentsPanel.querySelector("#attachments-table-body");
+            documents.forEach(doc => {
+                let row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${doc["s5-filename"] || "Unknown"}</td>
+                    <td>${doc["s5-desc"] || "No description provided"}</td>
+                    <td>${doc["s5-size"] || "Unknown"}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Attach event listener for editing
+        attachmentsPanel.querySelector(".edit-btn").addEventListener("click", () => {
+            this.stepper.setActive(this.stepper.steps[5]); // Navigate to Step 5 on edit
+        });
+    }
+
+    /**
+     * Fetches the label text for an input field based on its name.
+     */
     getLabelForInput(name) {
         let label = "";
 
@@ -493,6 +544,10 @@ class Step6Handler {
         // Remove asterisks and extra spaces
         return label.replace(/\*/g, "").trim() || name; // Default to name if no label found
     }
+
+
+
+ 
     
 }
 
