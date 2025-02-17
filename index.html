@@ -285,7 +285,6 @@
                     <div class="container">
                         <form id="step-3-form">
                             <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
-                            <br>
                             <div id="legalrep-container">
                                 <div id="legalrep-panel-container"></div>
 
@@ -305,19 +304,20 @@
                             <fieldset id="legalrepinfo-fieldset">
                             <label class="required-label" for="s3-reptel1">Telephone number</label>
                                                 <input type="text" id="s3-reptel1" name="s3-reptel1">
-                            <label class="required-label" for="s3-reprole">Role</label>
-                            <select id="s3-reprole" name="s3-reprole">
-                                <option value="Select" selected>(Select)</option>
-                                <option value="saab">Saab</option>
-                                <option value="fiat">Fiat</option>
-                                <option value="audi">Audi</option>
-                            </select>
+                            <label class="required-label" for="s3-reprole">Role</label>                        
+                                <select id="s3-reprole" name="s3-reprole">
+                                    <option value="" selected>(Select)</option>
+                                    <option value="Executor/Executrix">Executor/Executrix</option>
+                                    <option value="Administrator">Administrator</option>
+                                    <option value="Liquidator">Liquidator</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            
                             </fieldset>
 
                         </div><br>
                         <div id="mailrecip-container"></div>
                            
-                            
                             <div class="alert" id="alert-norep">
                                 <div class="alert-warning">
                                     <div class="line"></div>
@@ -364,11 +364,12 @@
                                             </div>
                                             <div>
                                                 <label class="required-label" for="s3-reprole">Role of representative</label>
-                                                <select id="s3-reprole" name="s3-reprole">
-                                                    <option value="Select" selected>(Select)</option>
-                                                    <option value="saab">Saab</option>
-                                                    <option value="fiat">Fiat</option>
-                                                    <option value="audi">Audi</option>
+                                                <select id="s3-reprole-lb" name="s3-reprole">
+                                                    <option value="" selected>(Select)</option>
+                                                    <option value="Executor/Executrix">Executor/Executrix</option>
+                                                    <option value="Administrator">Administrator</option>
+                                                    <option value="Liquidator">Liquidator</option>
+                                                    <option value="Other">Other</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -399,7 +400,7 @@
                                                     <div>
                                                         <label class="required-label" for="s3-repprov">Province</label>
                                                         <select id="s3-repprov" name="s3-repprov">
-                                                            <option value="Select" selected>(Select)</option>
+                                                            <option value="" selected>(Select)</option>
                                                             <option value="Alberta">Alberta</option>
                                                             <option value="British Columbia">British Columbia</option>
                                                             <option value="Manitoba">Manitoba</option>
