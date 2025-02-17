@@ -53,7 +53,7 @@
                 </div>
             </section>
             
-            <section class="step" id="step-1">
+            <section class="step active" id="step-1">
                 <div class="step-header">
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
@@ -168,7 +168,7 @@
                 </div>
             </section>
 
-            <section class="step active" id="step-2">
+            <section class="step" id="step-2">
                 <div class="step-header">
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
@@ -179,8 +179,10 @@
                     <div class="container">
                         <form id="step-2-form">
                             <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
-                            <div class="panel">
-                                <h5>Deceased individual’s information on file</h5>
+                            <div id="deceasedinfo-panel-container">
+
+                            <!-- <div class="panel" id="deceasedinfo-panel-container"> -->
+                                <!-- <h5>Deceased individual’s information on file</h5>
                                 <table class="panel-data">
                                     <tr class="row">
                                         <td class="label">Name of deceased</td>
@@ -194,7 +196,7 @@
                                         <td class="label">Date of death</td>
                                         <td>2023-11-20</td>
                                     </tr>
-                                </table>
+                                </table> -->
                             </div>
                             <fieldset id="s2q1-fieldset" data-radio-group>
                                 <legend class="required-label"> Did the deceased taxpayer have a will?</legend>
@@ -463,13 +465,12 @@
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
                     </div>
-                    <h2>Type of clearance</h2>
+                    <h2>Tax return information</h2>
                 </div>
                 <div class="step-content">
                     <div class="container">
                         <form id="step-4-form">
                             <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
-                            <p>This type of clearance certificate covers income earned up to the date of death.</p>
                             <fieldset id="s4q1-fieldset" required>
                                 <legend class="required-label">
                                     What tax return(s) were filed?
@@ -507,7 +508,9 @@
                     <h2>Supporting documents</h2>
                 </div>
                 <div class="step-content">
-                    <form id="step-4-form">
+                    <div class="container">
+
+                    <form id="step-5-form">
                         <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
                         <br>
                         <fieldset id="s5q1-fieldset" required>
@@ -558,8 +561,13 @@
                                 </span>
                                 Attach document</button>
                             </div>
+                            <div id="uploadedfile-info" style="text-align:right;">
+                                Total size: <span id="uploadedfiles-size"></span><br>
+                                Maximum total file upload size is 500 MB
+                            </div>
                         </fieldset>
                     </form>
+                    </div>
                     <div class="lightbox-container" id="uploaddoc-lightbox">
                         <div class="lightbox">
                             <div class="header">
@@ -603,7 +611,16 @@
                     <h2>Review and submit</h2>
                 </div>
                 <div class="step-content">
-                    <p>step content</p>
+                    <div class="container">
+
+                    <form id="step-6-form">
+                        <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
+                        <div id="s6-review-container">
+                          
+                        </div>
+                    </form>
+                    </div>
+                    
                     <button class="btn btn-secondary back-button" type="button">Back</button>
                     <button class="btn btn-primary next-button" type="button">Next</button>
                 </div>

@@ -740,17 +740,17 @@ textarea {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  text-align: left;
  
 }
-.panel-data .row {
+.panel-data tr {
   display: flex;
-  justify-content: space-between;
+  justify-content:flex-start;
   align-items: flex-start;
   border-bottom:0.05em solid #808080; 
   padding:12px;
+  text-align:left;
 }
-.panel-data .row:last-child {
+.panel-data tr:last-child {
   border-bottom:none;
 }
 
@@ -759,7 +759,7 @@ textarea {
   width:55%;
 }
 .panel-data .value {
- text-align:right;
+ text-align:left;
 }
 
 

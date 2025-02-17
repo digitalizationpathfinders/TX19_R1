@@ -118,6 +118,9 @@ class Stepper {
                 case 5:
                     this.stepHandlers[stepNum] = new Step5Handler();
                     break;
+                case 6:
+                    this.stepHandlers[stepNum] = new Step6Handler(this);
+                break;
             }
         }
     }
@@ -126,27 +129,24 @@ class Stepper {
 class Step2Handler {
     constructor(){
         this.deceasedtpPanelContainer = document.getElementById("deceasedinfo-panel-container");
+        this.deceasedIndivid = DataManager.getData("deceasedInfo") || null;
+
         this.populateDeceasedPanel();
         
     }
     populateDeceasedPanel(){
-        console.log(this.deceasedtpPanelContainer);
 
-        this.deceasedtpPanelContainer.innerHTML = "";
-        // this.deceasedtpPanelContainer.innerHTML = `
-        //     <div class="heading-row">
-        //         <h5>Deceased individual's information on file</h5>
-        //     </div>
-        //     <table class="panel-data">
-        //         <tr><td class="label">Name of deceased</td><td>--</td></tr>
-        //         <tr><td class="label">Social Insurance Number</td><td>--</td></tr>
-        //         <tr><td class="label">Date of death</td><td>--</td></tr>
-        //     </table>
-        // `;
-
-    }
+        new PanelObj({
+            container: this.deceasedtpPanelContainer,
+            title: "Deceased individual’s information on file",
+            data: this.deceasedIndivid,
+            editButton: false, 
+            editIndex: null,
+            reviewPanel: false,
+            labels: ["Name of deceased", "Social insurance number (SIN)", "Date of death"]
+        })
     
-
+    }
 }
 
 class Step3Handler {
@@ -155,9 +155,6 @@ class Step3Handler {
         this.legalRep = DataManager.getData("legalRepresentative") || null;
 
 
-        // if(this.userLevel === 3 && !this.legalRep) {
-        //     this.prepopulateForLevel3();
-        // }
         this.addRepLightbox = new FormLightbox(document.getElementById("addlegalrep-lightbox"));
 
         this.repPanelContainer = document.getElementById("legalrep-panel-container");
@@ -188,6 +185,11 @@ class Step3Handler {
                 this.updateRepresentativePanels();
             }
         });
+
+        document.addEventListener("editPanelEvent", (event) => {
+            this.editPanelData(event.detail.index);
+          
+        });
     }
 
     handleFormSubmit(formData) {
@@ -208,15 +210,23 @@ class Step3Handler {
             altPhone: formData["s3-reptel2"] || " "
         };
 
-        if (!this.legalRep) {
-            // If no legal rep is set, this is the legal representative
-            DataManager.saveData("legalRepresentative", newRepresentative);
+        if (editIndex !== null) {
+            if (editIndex === "legalRep") {
+                DataManager.saveData("legalRepresentative", newRepresentative);
+            } else {
+                this.mailRecipients[editIndex] = newRepresentative;
+                DataManager.saveData("mailRecipients", this.mailRecipients);
+            }
+            this.addRepLightbox.clearEditIndex();
         } else {
-            // Otherwise, it's an additional mail recipient
-            this.mailRecipients.push(newRepresentative);
-            DataManager.saveData("mailRecipients", this.mailRecipients);
+            if (!this.legalRep) {
+                DataManager.saveData("legalRepresentative", newRepresentative);
+            } else {
+                this.mailRecipients.push(newRepresentative);
+                DataManager.saveData("mailRecipients", this.mailRecipients);
+            }
         }
-
+    
         this.updateRepresentativePanels();
     }
 
@@ -231,7 +241,17 @@ class Step3Handler {
                 this.infoAlert.classList.remove("hidden");
                 this.legalRepInfoFieldset.classList.remove("hidden"); // Show fieldset for phone + role collection
                 this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
-                this.createRepresentativePanel(this.legalRep, "Legal Representative", true, false); // Show name & address only
+                //this.createRepresentativePanel(this.legalRep, "Legal Representative", true, false); // Show name & address only
+                new PanelObj({
+                    container: this.repPanelContainer,
+                    title: "Legal representative",
+                    data: this.legalRep,
+                    editButton: false, 
+                    editIndex: "legalRep",
+                    reviewPanel: false,
+                    labels: ["Name", "Mailing address"]
+
+                })
             } 
             // State 2: Level 2 User (Legal Rep Just Added) - Show all fields, hide fieldset
             else {
@@ -239,7 +259,17 @@ class Step3Handler {
                 this.infoAlert.classList.remove("hidden");
                 this.legalRepInfoFieldset.classList.add("hidden"); // Hide fieldset
                 this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
-                this.createRepresentativePanel(this.legalRep, "Legal Representative", true, true); // Show all data
+                //this.createRepresentativePanel(this.legalRep, "Legal Representative", true, true); // Show all data
+                new PanelObj({
+                    container: this.repPanelContainer,
+                    title: "Legal representative",
+                    data: this.legalRep,
+                    editButton: true, 
+                    editIndex: "legalRep",
+                    reviewPanel: false,
+                    labels: ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"]
+
+                })
             }
         } else {
             // State 1: No Legal Rep - Show warning, hide info banner, set button for adding legal rep
@@ -250,37 +280,27 @@ class Step3Handler {
         }
 
         this.mailRecipients.forEach((recipient, index) => {
-            this.createRepresentativePanel(recipient, `Mail Recipient ${index + 1}`);
+            //this.createRepresentativePanel(recipient, `Mail Recipient ${index + 1}`);
+            new PanelObj({
+                container: this.mailRecipContainer,
+                title: `Mail recipient ${index + 1}`,
+                data: recipient,
+                editButton: true, 
+                editIndex: index,
+                labels: ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"]
+            })
         });
-
-     
     }
-
-    createRepresentativePanel(rep, title, isLegalRep = false, showFullDetails = true) {
-        const panel = document.createElement("div");
-        panel.classList.add("panel");
     
-        // Show Name & Address only (Level 3) OR Show all fields (Level 2)
-        panel.innerHTML = `
-            <div class="heading-row">
-                <h5>${title}</h5>
-            </div>
-            <table class="panel-data">
-                <tr><td class="label">Name</td><td>${rep.name}</td></tr>
-                <tr><td class="label">Mailing Address</td><td>${rep.address}</td></tr>
-                ${showFullDetails ? `
-                <tr><td class="label">Primary Phone</td><td>${rep.phone}</td></tr>
-                <tr><td class="label">Alternate Phone</td><td>${rep.altPhone}</td></tr>
-                <tr><td class="label">Role</td><td>${rep.role}</td></tr>` : ""}
-            </table>
-        `;
-
-        if (isLegalRep) {
-            this.repPanelContainer.appendChild(panel);
-        } else {
-            this.mailRecipContainer.appendChild(panel);
-        }
+    editPanelData(index) {
+        let repData = index === "legalRep" ? this.legalRep : this.mailRecipients[index];
+    
+        this.addRepLightbox.openLightbox();
+        this.addRepLightbox.populateForm(repData);
+        this.addRepLightbox.setEditIndex(index);
     }
+
+   
 }
 
 class Step5Handler {
@@ -293,6 +313,7 @@ class Step5Handler {
         this.fileNameDisplay = document.getElementById("s5-filename-display");
         this.hiddenFileInput = document.getElementById("s5-filename");
         this.hiddenFileSize = document.getElementById("s5-size");
+        
 
         if(!this.browseFileButton) return;
 
@@ -316,6 +337,15 @@ class Step5Handler {
                 this.openEditLightbox(event.detail.index, event.detail.rowData);
             }
         });
+        document.addEventListener("fileSizeUpdated", () => {
+            this.calculateTotalFileSize();
+        });
+        document.addEventListener("rowDeleted", () => {
+            this.calculateTotalFileSize();
+        });
+        
+
+        this.calculateTotalFileSize();
     }
     selectFile(){
         this.selectedFileName = this.fakeFileNames[Math.floor(Math.random() * this.fakeFileNames.length)];
@@ -323,8 +353,9 @@ class Step5Handler {
         this.fileNameDisplay.textContent = this.selectedFileName;
         this.hiddenFileInput.value = this.selectedFileName;
 
-        const fakeSize = Math.floor(Math.random() * 450) + 50 + " KB";
-        this.hiddenFileSize.value = fakeSize;
+        // Generate a random file size in KB (stored as a number)
+    const fakeSize = Math.floor(Math.random() * 450) + 50; // Generates 50-500 KB
+    this.hiddenFileSize.value = fakeSize; // Store size as a number
     }
 
     openEditLightbox(index, rowData) {
@@ -347,8 +378,11 @@ class Step5Handler {
     }
 
     handleFormSubmit(formData) {
-    
         const editIndex = this.uploadDocLightbox.getEditIndex();
+        
+
+        let fileSize = parseInt(formData["s5-size"], 10) || 0;
+        formData["s5-size"] = fileSize < 1024 ? `${fileSize} KB` : `${(fileSize / 1024).toFixed(2)} MB`;
     
         if (editIndex !== null && editIndex !== undefined && editIndex !== "") {
             this.documentsTable.rows[editIndex] = formData;
@@ -356,11 +390,177 @@ class Step5Handler {
             this.documentsTable.refreshTable();
         } else {
             this.documentsTable.addRow(formData);
-        }
+          
+        }       
+        document.dispatchEvent(new Event("fileSizeUpdated")); // Notify that the file size changed
+
     }
+
+    calculateTotalFileSize() {
+        let totalSize = this.documentsTable.rows.reduce((sum, row) => {
+            let size = parseInt(row["s5-size"], 10) || 0; // Ensure size is numeric
+            return sum + size;
+        }, 0);
     
+        let displaySize;
+        if (totalSize < 1024) {
+            displaySize = `${totalSize} KB`; // Keep KB format
+        } else {
+            displaySize = `${(totalSize / 1024).toFixed(2)} MB`; // Convert to MB with two decimals
+        }
+    
+        document.getElementById("uploadedfiles-size").textContent = displaySize;
+    }
+
     
 }
+
+class Step6Handler {
+    constructor(stepper) {
+        this.stepper = stepper;
+        this.reviewContainer = document.getElementById("s6-review-container");
+        this.populateReview();
+
+        // Listen for navigation events
+        document.addEventListener("navigateToStep", (event) => {
+            this.stepper.setActive(this.stepper.steps[event.detail.index]);
+        });
+    }
+
+    populateReview() {
+        this.reviewContainer.innerHTML = ""; // Clear previous content
+    
+        const stepsToReview = [
+            { stepNum: 1, title: "Pre-screening", storageKey: "stepData_1" },
+            { stepNum: 2, title: "Deceased individual’s information", storageKey: "deceasedInfo", labels: ["Name of deceased", "Social insurance number (SIN)", "Date of death"]  },
+            { stepNum: 3, title: "Representative's information", storageKey: "legalRepresentative", labels: ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"]},
+            { stepNum: 4, title: "Tax return information", storageKey: "stepData_4" },
+            { stepNum: 5, title: "Supporting documentation", storageKey: "stepData_5" }
+        ];
+    
+        stepsToReview.forEach(({ stepNum, title, storageKey, labels }) => {
+            let data = DataManager.getData(storageKey);
+            if (!data) return; // Skip empty steps
+    
+            // Replace field names with question labels
+            let formattedData = {};
+            Object.keys(data).forEach((key, index) => {
+                let questionLabel = labels && labels[index] ? labels[index] : this.getLabelForInput(key);
+                formattedData[questionLabel] = data[key]; // Assign label instead of raw key
+            });
+    
+            // Generate panel for each step
+            new PanelObj({
+                container: this.reviewContainer,
+                title: title,
+                data: formattedData, // Use the formatted data with proper labels
+                editButton: true,
+                editIndex: stepNum,
+                reviewPanel: true
+            });
+        });
+    
+        // Listen for edit button clicks
+        document.addEventListener("editPanelEvent", (event) => {
+            this.stepper.setActive(this.stepper.steps[event.detail.index]);
+        });
+    }
+
+
+    
+    
+    getLabelForInput(name) {
+        let label = "";
+
+        // Try to find a corresponding label element
+        const input = document.querySelector(`[name="${name}"]`);
+        if (input) {
+            const labelElement = document.querySelector(`label[for="${input.id}"]`);
+            if (labelElement) {
+                label = labelElement.textContent.trim();
+            }
+        }
+
+        // If it's a radio group, get the fieldset legend
+        const fieldset = document.querySelector(`fieldset [name="${name}"]`);
+        if (fieldset) {
+            const legend = fieldset.closest("fieldset").querySelector("legend");
+            if (legend) {
+                label = legend.textContent.trim();
+            }
+        }
+
+        // Remove asterisks and extra spaces
+        return label.replace(/\*/g, "").trim() || name; // Default to name if no label found
+    }
+    
+}
+
+
+class PanelObj {
+    constructor({ container, title, data, editButton = false, editIndex = null, reviewPanel = false, labels = null }) {
+        this.container = container; // The DOM element where the panel should be appended
+        this.title = title;
+        this.data = data;
+        this.editButton = editButton;
+        this.editIndex = editIndex;
+        this.reviewPanel = reviewPanel;
+        this.labels = labels; // Store optional labels
+
+        this.render();
+    }
+
+    render() {
+        this.panelElement = document.createElement("div");
+        this.panelElement.classList.add("panel");
+
+        let editButtonHTML = this.editButton ? 
+            `<button type="button" class="btn-tertiary edit-btn" data-index="${this.editIndex}"><span class="material-icons">edit</span>Edit</button>` : "";
+
+        let tableRows = Object.entries(this.data)
+            .map(([key, value], index) => {
+                let label = this.labels && this.labels[index] ? this.labels[index] : this.formatKey(key);
+                return `<tr><td class="label">${label}</td><td>${value}</td></tr>`;
+            })
+            .join("");
+
+        this.panelElement.innerHTML = `
+            <div class="heading-row">
+                <h5>${this.title}</h5>
+                ${editButtonHTML}
+            </div>
+            <table class="panel-data">
+                ${tableRows}
+            </table>
+        `;
+
+        this.container.appendChild(this.panelElement);
+
+        if (this.editButton) {
+            this.panelElement.querySelector(".edit-btn").addEventListener("click", () => this.emitEditEvent());
+        }
+    }
+
+    formatKey(key) {
+        return key
+            .replace(/([A-Z])/g, " $1") // Convert camelCase to spaced words
+            .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
+            .trim();
+    }
+
+    emitEditEvent() {
+        if (this.reviewPanel) {
+            document.dispatchEvent(new CustomEvent("navigateToStep", {
+                detail: { index: this.editIndex }
+            }));
+        } else {
+            document.dispatchEvent(new CustomEvent("editPanelEvent", {
+                detail: { index: this.editIndex, panelTitle: this.title, panelData: this.data }
+            }));
+        }
+    }
+}
+
 
 class TableObj {
     constructor (tableID) {
@@ -376,13 +576,13 @@ class TableObj {
     renderEmptyTable() {
         this.tbody.innerHTML = `<tr><td colspan="${this.columnCount + 1}" style="text-align:center;">${this.defaultText}</td></tr>`;
     }
-    addRow(data) {
+    addRow(data, rowIndex = this.rows.length) {
         // If the table is displaying the default placeholder row, clear it
         if (this.tbody.querySelector("tr") && this.tbody.querySelector("tr").cells.length === 1) {
             this.tbody.innerHTML = "";
         }
-        const rowIndex = this.rows.length; // Get index for reference
-        this.rows.push(data); // Store the row data for editing
+        this.rows[rowIndex] = data; // Ensure correct index assignment
+
 
         // Create a new row
         const tr = document.createElement("tr");
@@ -433,6 +633,10 @@ class TableObj {
         index = parseInt(index);
         this.rows.splice(index, 1);
         this.refreshTable();
+
+        document.dispatchEvent(new CustomEvent("rowDeleted"));
+
+       
     }
 
     refreshTable() {
@@ -444,7 +648,7 @@ class TableObj {
         }
     
         this.rows.forEach((rowData, index) => {
-            this.addRow(rowData);
+            this.addRow(rowData, index);
         });
     }
     
