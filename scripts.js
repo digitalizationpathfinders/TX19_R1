@@ -109,8 +109,11 @@ class Stepper {
     customStepCode(stepNum){
         if (!this.stepHandlers[stepNum]) {
             switch (stepNum) {
+                case 2:
+                    this.stepHandlers[stepNum] = new Step2Handler(); 
+                    break;
                 case 3:
-                    this.stepHandlers[stepNum] = new Step3Handler(); // Call step 3 logic
+                    this.stepHandlers[stepNum] = new Step3Handler(); 
                     break;
                 case 5:
                     this.stepHandlers[stepNum] = new Step5Handler();
@@ -118,6 +121,32 @@ class Stepper {
             }
         }
     }
+}
+
+class Step2Handler {
+    constructor(){
+        this.deceasedtpPanelContainer = document.getElementById("deceasedinfo-panel-container");
+        this.populateDeceasedPanel();
+        
+    }
+    populateDeceasedPanel(){
+        console.log(this.deceasedtpPanelContainer);
+
+        this.deceasedtpPanelContainer.innerHTML = "";
+        // this.deceasedtpPanelContainer.innerHTML = `
+        //     <div class="heading-row">
+        //         <h5>Deceased individual's information on file</h5>
+        //     </div>
+        //     <table class="panel-data">
+        //         <tr><td class="label">Name of deceased</td><td>--</td></tr>
+        //         <tr><td class="label">Social Insurance Number</td><td>--</td></tr>
+        //         <tr><td class="label">Date of death</td><td>--</td></tr>
+        //     </table>
+        // `;
+
+    }
+    
+
 }
 
 class Step3Handler {
