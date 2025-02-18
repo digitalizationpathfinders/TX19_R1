@@ -70,21 +70,31 @@ class Stepper {
 
     storeData(stepNum) {
         const stepForm = document.querySelector(`#step-${stepNum}-form`);
-        if (!stepForm) return;
-
         let dataObj = {};
-        stepForm.querySelectorAll("input, select, textarea").forEach(input => {
-            if (input.type === "radio" || input.type === "checkbox") {
-                if (input.checked) {
+    
+        if (stepForm) {
+            stepForm.querySelectorAll("input, select, textarea").forEach(input => {
+                if (input.type === "radio" || input.type === "checkbox") {
+                    if (input.checked) {
+                        dataObj[input.name] = input.value;
+                    }
+                } else {
                     dataObj[input.name] = input.value;
                 }
-            } else {
-                dataObj[input.name] = input.value;
+            });
+        }
+    
+        // If on Step 5, also store uploaded documents
+        if (stepNum === 5) {
+            let step5Handler = this.stepHandlers[stepNum]; 
+            if (step5Handler && step5Handler.documentsTable) {
+                dataObj["uploadedDocuments"] = step5Handler.documentsTable.rows;
             }
-        });
-
+        }
+    
         DataManager.saveData(`stepData_${stepNum}`, dataObj);
     }
+    
 
     loadStoredData() {
         this.steps.forEach((step, index) => {
@@ -435,15 +445,28 @@ class Step6Handler {
             { stepNum: 2, title: "Deceased individual’s information", storageKey: "deceasedInfo", labels: ["Name of deceased", "Social insurance number (SIN)", "Date of death"]  },
             { stepNum: 3, title: "Representative's information", storageKey: "legalRepresentative", labels: ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"]},
             { stepNum: 4, title: "Tax return information", storageKey: "stepData_4" },
-            { stepNum: 5, title: "Supporting documentation", storageKey: "stepData_5" }
+            { stepNum: 5, title: "Supporting documentation", storageKey: "stepData_5" },
         ];
     
-        stepsToReview.forEach(({ stepNum, title, storageKey, labels }) => {
+        stepsToReview.forEach(({ stepNum, title, storageKey, labels, subtable }) => {
             let data = DataManager.getData(storageKey);
             if (!data) return; // Skip empty steps
     
             // Replace field names with question labels
             let formattedData = {};
+            let subTableData = null; // Placeholder for subtable
+
+            // Check if it's Step 5 (Supporting Documents)
+        if (stepNum === 5 && data["uploadedDocuments"]) {
+            subTableData = {
+                title: "Attachments",
+                headers: ["Name", "Description", "File Size"],
+                columns: ["s5-filename", "s5-desc", "s5-size"],
+                rows: data["uploadedDocuments"] || [] // Ensure it's always an array
+            };
+            delete data["uploadedDocuments"];
+        }
+
             Object.keys(data).forEach((key, index) => {
                 let questionLabel = labels && labels[index] ? labels[index] : this.getLabelForInput(key);
                 formattedData[questionLabel] = data[key]; // Assign label instead of raw key
@@ -456,10 +479,11 @@ class Step6Handler {
                 data: formattedData, // Use the formatted data with proper labels
                 editButton: true,
                 editIndex: stepNum,
-                reviewPanel: true
+                reviewPanel: true,
+                subTable: subTableData
             });
         });
-        this.loadSupportingDocuments();
+        //this.loadSupportingDocuments();
 
         // Listen for edit button clicks
         document.addEventListener("editPanelEvent", (event) => {
@@ -467,59 +491,6 @@ class Step6Handler {
         });
     }
 
-    loadSupportingDocuments() {
-        let documents = DataManager.getData("stepData_5");
-
-        // Create a panel for "Attachments"
-        const attachmentsPanel = document.createElement("div");
-        attachmentsPanel.classList.add("panel");
-        attachmentsPanel.innerHTML = `
-            <div class="heading-row">
-                <h5>Attachments</h5>
-                <button type="button" class="btn-tertiary edit-btn" data-index="5"><span class="material-icons">edit</span>Edit</button>
-            </div>
-            <table class="panel-data">
-                <tr><td class="label">Attachments</td><td></td></tr>
-            </table>
-            <table cellpadding="0" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Size</th>
-                    </tr>
-                </thead>
-                <tbody id="attachments-table-body">
-                    <!-- Documents will be dynamically inserted here -->
-                </tbody>
-            </table>
-        `;
-
-        this.reviewContainer.appendChild(attachmentsPanel);
-
-        // Populate the table with uploaded files
-        if (documents && Array.isArray(documents)) {
-            const tableBody = attachmentsPanel.querySelector("#attachments-table-body");
-            documents.forEach(doc => {
-                let row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${doc["s5-filename"] || "Unknown"}</td>
-                    <td>${doc["s5-desc"] || "No description provided"}</td>
-                    <td>${doc["s5-size"] || "Unknown"}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        // Attach event listener for editing
-        attachmentsPanel.querySelector(".edit-btn").addEventListener("click", () => {
-            this.stepper.setActive(this.stepper.steps[5]); // Navigate to Step 5 on edit
-        });
-    }
-
-    /**
-     * Fetches the label text for an input field based on its name.
-     */
     getLabelForInput(name) {
         let label = "";
 
@@ -544,16 +515,12 @@ class Step6Handler {
         // Remove asterisks and extra spaces
         return label.replace(/\*/g, "").trim() || name; // Default to name if no label found
     }
-
-
-
- 
     
 }
 
 
 class PanelObj {
-    constructor({ container, title, data, editButton = false, editIndex = null, reviewPanel = false, labels = null }) {
+    constructor({ container, title, data, editButton = false, editIndex = null, reviewPanel = false, labels = null, subTable = null }) {
         this.container = container; // The DOM element where the panel should be appended
         this.title = title;
         this.data = data;
@@ -561,6 +528,7 @@ class PanelObj {
         this.editIndex = editIndex;
         this.reviewPanel = reviewPanel;
         this.labels = labels; // Store optional labels
+        this.subTable = subTable;
 
         this.render();
     }
@@ -572,12 +540,36 @@ class PanelObj {
         let editButtonHTML = this.editButton ? 
             `<button type="button" class="btn-tertiary edit-btn" data-index="${this.editIndex}"><span class="material-icons">edit</span>Edit</button>` : "";
 
+        // Generate table rows for main data
         let tableRows = Object.entries(this.data)
             .map(([key, value], index) => {
                 let label = this.labels && this.labels[index] ? this.labels[index] : this.formatKey(key);
-                return `<tr><td class="label">${label}</td><td>${value}</td></tr>`;
+                return `<tr><td class="label">${label}</td><td>${value || "N/A"}</td></tr>`;
             })
             .join("");
+
+        let subTableHTML = "";
+
+        // Generate sub-table dynamically if data is provided
+        if (this.subTable && this.subTable.rows && this.subTable.rows.length > 0) {
+            subTableHTML = `
+                <h5>${this.subTable.title || "Subtable"}</h5>
+                <table class="review-table" cellpadding="0" cellspacing="0">
+                    <thead>
+                        <tr>
+                            ${this.subTable.headers.map(header => `<th>${header}</th>`).join("")}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${this.subTable.rows.map(row => `
+                            <tr>
+                                ${this.subTable.columns.map(column => `<td>${row[column] || "N/A"}</td>`).join("")}
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            `;
+        }
 
         this.panelElement.innerHTML = `
             <div class="heading-row">
@@ -587,6 +579,7 @@ class PanelObj {
             <table class="panel-data">
                 ${tableRows}
             </table>
+            ${subTableHTML} <!-- Dynamically insert sub-table if applicable -->
         `;
 
         this.container.appendChild(this.panelElement);

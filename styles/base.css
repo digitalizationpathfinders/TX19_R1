@@ -80,7 +80,7 @@ h2 {
 }
 h3 {
   font-size:24px;
-  padding-left:30px !important;
+  /* padding-left:30px !important; */
 }
 h4 {
   font-size:22px;
@@ -736,7 +736,8 @@ textarea {
   align-items: flex-start;
  
 }
-.panel-data {
+.panel-data,
+.table-data {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -747,11 +748,15 @@ textarea {
   justify-content:flex-start;
   align-items: flex-start;
   border-bottom:0.05em solid #808080; 
-  padding:12px;
+  padding:12px 0;
   text-align:left;
 }
 .panel-data tr:last-child {
   border-bottom:none;
+}
+
+.panel-data td {
+  padding:6px 0;
 }
 
 .panel-data .label {
@@ -761,8 +766,6 @@ textarea {
 .panel-data .value {
  text-align:left;
 }
-
-
 
 .panel-data .valueWI {
   width:25%;
@@ -778,6 +781,7 @@ textarea {
 
 
 
+
 .special-ul {
   width:100%;
   text-align: left;
@@ -785,12 +789,14 @@ textarea {
 }
 
 
-.table {
+.table,
+.review-table {
   min-width:100%;
 }
 
-
-.table th, td{
+.table th, 
+.table td
+{
   text-align: left;
   padding:12px 12px;
  
@@ -841,7 +847,6 @@ textarea {
   border-radius:0 0 4px 0;
 }
 
-
 .table-resp {
   display:flex;
   flex-flow: column wrap;
@@ -856,6 +861,16 @@ textarea {
     width: 1%;
     white-space: nowrap;
     text-align: left;
+}
+
+
+
+
+.review-table th,
+.review-table td{
+  text-align: left;
+  padding:6px 0;
+ 
 }
 
 
