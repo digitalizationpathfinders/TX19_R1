@@ -939,6 +939,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (taskData.legalRepresentative) {
             DataManager.saveData("legalRepresentative", taskData.legalRepresentative);
+
+            
+        }
+        if (taskData.racUserName) {
+            DataManager.saveData("racUserName", taskData.racUserName);
+            document.getElementById("task-rep-name").textContent = taskData.racUserName;   
+        }
+        else {
+            document.getElementById("task-rep-name").textContent = "REPRESENTATIVE NAME";
+        }
+
+        if (taskData.deceasedInfo && taskData.deceasedInfo.name) {
+            document.getElementById("task-accountuser-name").textContent = taskData.deceasedInfo.name;
         }
     }
 

@@ -131,6 +131,32 @@ header {
   margin:4px 32px;
 }
 
+.portal-header {
+  background-color:#284162;
+  color:#fff;
+}
+.portal-header .content {
+  padding:16px;
+  margin:4px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items:center;
+}
+.portal-branding {
+  display: flex;
+}
+
+.portal-branding div:first-of-type{
+  padding-right:12px;
+  border-right:1px solid #fff;
+}
+.portal-branding div:last-of-type{
+  padding-left:12px;
+}
+
+.portal-header .heading {
+  font-size:20px;
+}
 
 header div img {
   width:100%;
@@ -206,7 +232,12 @@ header div img {
   transition: max-height 0.3s ease-in; /* Ensure smooth opening */
 }
 
-
+.inline-flex {
+  display:inline-flex;
+}
+.uppercase {
+  text-transform:uppercase;
+}
 
 button {
   display: inline-flex;

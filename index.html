@@ -15,10 +15,31 @@
                 </div>
                 <a href="#" class="language-switch">Français</a>
             </div>
+            <div class="portal-header">
+                <div class="content">
+                <div class="portal-branding">
+                    <div>
+                        <span class="heading">Canada Revenue Agency</span>
+                        <br>Represent a Client
+                    </div>
+                    <div>
+                        <span class="inline-flex" id="task-accountuser-type">
+                            <span class="material-icons">person</span>Individual client
+                        </span><BR>
+                        <span class="uppercase" id="task-accountuser-name">
+                        </span>
+                    </div>
+                </div>
+                <div class="inline-flex">
+                    <span class="material-icons">account_circle</span>
+                    <span class="uppercase" id="task-rep-name"></span>
+                </div>
+                </div>
+            </div>
         </header>
         <main class="stepper">
             <h1>TX19 - Asking for a clearance certificate</h1>
-            <section class="step" id="step-0">
+            <section class="step active" id="step-0">
                 <div class="step-header">
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
@@ -28,6 +49,19 @@
                 <div class="step-content">
                     <div class="container">
                         <p>A clearance certificate allows the legal representative to distribute assets without the risk of being held personally responsible for unpaid amounts the person who died, estate, trust, or corporation might owe the CRA. The legal representative’s financial institution or lawyers may also ask them for a clearance certificate.</p>
+                        <div class="alert">
+                            <div class="alert-info">
+                                <div class="line"></div>
+                                <div><span class="material-icons">
+                                    info
+                                    </span>
+                                </div>
+                                <div class="line"></div>
+                            </div>
+                            <div class="alert-content">
+                                This deceased individual certificate covers income earned up to the date of death. If you require an estate trust final clearance, you must also file a clearance certificate through My Trust Account within Represent a Client.
+                            </div>
+                        </div>
                         <button type="button" class="accordion">Documents you must have to submit your request</button>
                         <div class="accordion-content">
                             <ul>
@@ -485,7 +519,7 @@
                 </div>
             </section>
 
-            <section class="step active" id="step-5">
+            <section class="step" id="step-5">
                 <div class="step-header">
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
@@ -617,7 +651,7 @@
                     </div>
                     
                     <button class="btn btn-secondary back-button" type="button">Back</button>
-                    <button class="btn btn-primary next-button" type="button">Submit</button>
+                    <button class="btn btn-primary submit-button" type="button">Submit</button>
                 </div>
             </section>
         </main>
