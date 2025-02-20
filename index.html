@@ -406,11 +406,11 @@
                                                 <label for="s3-country-op2"></label>
                                             </div>
                                             </fieldset>
-                                            <div id="s3-canada-address" class="hidden">
+                                            <div id="s3-canada-address" data-inithidden class="hidden">
                                                 <div class="field-row">
                                                     <div>
                                                         <label class="required-label" for="s3-caddress">Mailing address</label>
-                                                        <input type="text" id="s3-caddress" name="s3-rep-caddress">
+                                                        <input type="text" id="s3-caddress" name="s3-caddress">
                                                     </div>
                                                     <div>
                                                         <label class="required-label" for="s3-repcity">City, town or community</label>
@@ -610,6 +610,15 @@
                                     <input type="text" id="s5-desc" name="s5-desc" maxlength="150" required>
                                     <input type="hidden" id="s5-size" name="s5-size">
                                 </form>
+                                <div id="s5-browsewind" class="browse-window hidden">
+                                    <div class="browse-window-header">Browse</div>
+                                        <ul class="file-list">
+                                            <li id="contract-doc" class="file-item"><span class="material-icons file-icon">insert_drive_file</span>WillTestament.pdf</li>
+                                            <li id="detailedassets-doc"  class="file-item"><span class="material-icons file-icon">insert_drive_file</span>DetailedAssetsList.docx</li>
+                                            <li id="assetdistribution-doc" class="file-item"><span class="material-icons file-icon">insert_drive_file</span>AssetDistribution_List.docx</li>
+                                            <li id="mortgage-doc" class="file-item"><span class="material-icons file-icon">insert_drive_file</span>MortgageStatement.docx</li>
+                                        </ul>
+                                </div>
                             </div>
                             <div class="buttons">
                                 <button class="btn-primary" type="button" data-submit>Upload document</button>

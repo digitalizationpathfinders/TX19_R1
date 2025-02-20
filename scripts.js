@@ -198,8 +198,8 @@ class Step3Handler {
 
         document.addEventListener("editPanelEvent", (event) => {
             this.editPanelData(event.detail.index);
-          
         });
+       
     }
 
     handleFormSubmit(formData) {
@@ -214,10 +214,10 @@ class Step3Handler {
 
         const newRepresentative = {
             name: formData["s3-repname"] || " ",
-            role: formData["s3-reprole"] || " ",
             address: address,
             phone: formData["s3-reptel1"] || " ",
-            altPhone: formData["s3-reptel2"] || " "
+            altPhone: formData["s3-reptel2"] || " ",
+            role: formData["s3-reprole"] || " "
         };
 
         if (editIndex !== null) {
@@ -251,7 +251,9 @@ class Step3Handler {
                 this.infoAlert.classList.remove("hidden");
                 this.legalRepInfoFieldset.classList.remove("hidden"); // Show fieldset for phone + role collection
                 this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
-                //this.createRepresentativePanel(this.legalRep, "Legal Representative", true, false); // Show name & address only
+                this.lightboxHeader.innerHTML = "Add additional mail recipient";
+                this.lightboxButton.innerHTML = "Add additional mail recipient";
+     
                 new PanelObj({
                     container: this.repPanelContainer,
                     title: "Legal representative",
@@ -260,8 +262,7 @@ class Step3Handler {
                     editIndex: "legalRep",
                     reviewPanel: false,
                     labels: ["Name", "Mailing address"]
-
-                })
+                });
             } 
             // State 2: Level 2 User (Legal Rep Just Added) - Show all fields, hide fieldset
             else {
@@ -269,7 +270,9 @@ class Step3Handler {
                 this.infoAlert.classList.remove("hidden");
                 this.legalRepInfoFieldset.classList.add("hidden"); // Hide fieldset
                 this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
-                //this.createRepresentativePanel(this.legalRep, "Legal Representative", true, true); // Show all data
+                this.lightboxHeader.innerHTML = "Add additional mail recipient";
+                this.lightboxButton.innerHTML = "Add additional mail recipient";
+        
                 new PanelObj({
                     container: this.repPanelContainer,
                     title: "Legal representative",
@@ -278,8 +281,7 @@ class Step3Handler {
                     editIndex: "legalRep",
                     reviewPanel: false,
                     labels: ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"]
-
-                })
+                });
             }
         } else {
             // State 1: No Legal Rep - Show warning, hide info banner, set button for adding legal rep
@@ -290,7 +292,6 @@ class Step3Handler {
         }
 
         this.mailRecipients.forEach((recipient, index) => {
-            //this.createRepresentativePanel(recipient, `Mail Recipient ${index + 1}`);
             new PanelObj({
                 container: this.mailRecipContainer,
                 title: `Mail recipient ${index + 1}`,
@@ -320,6 +321,9 @@ class Step5Handler {
         this.uploadDocLightbox = new FormLightbox(document.getElementById("uploaddoc-lightbox"));
 
         this.browseFileButton = document.getElementById("s5-browsebtn");
+        this.browseWindow = document.getElementById("s5-browsewind");
+        this.fileList = document.querySelectorAll('.file-item');
+
         this.fileNameDisplay = document.getElementById("s5-filename-display");
         this.hiddenFileInput = document.getElementById("s5-filename");
         this.hiddenFileSize = document.getElementById("s5-size");
@@ -327,16 +331,25 @@ class Step5Handler {
 
         if(!this.browseFileButton) return; 
 
-        this.fakeFileNames = [
-            "Contract_Agreement.pdf",
-            "Estate_Document.docx",
-            "Final_Tax_return.xlsx",
-            "LegalDeclaration.pdf"
-            //will, detailed asset list, detailed statement of assets being distributed,
-            //fake ones: copy of mortage statement, etc. fake financial docs
-        ];
+        // this.fakeFileNames = [
+        //     "Contract_Agreement.pdf",
+        //     "Estate_Document.docx",
+        //     "Final_Tax_return.xlsx",
+        //     "LegalDeclaration.pdf"
+        //     //will, detailed asset list, detailed statement of assets being distributed,
+        //     //fake ones: copy of mortage statement, etc. fake financial docs
+        // ];
 
-        this.browseFileButton.addEventListener("click", () => this.selectFile());
+        this.browseFileButton.addEventListener("click", () => {
+            this.browseWindow.classList.remove('hidden');
+            //this.selectFile();
+        });
+       this.fileList.forEach((file) => {
+            file.addEventListener('click', () =>{
+                this.selectFile(file);
+                this.browseWindow.classList.add('hidden');
+            });
+        }); 
 
         document.addEventListener("lightboxSubmitted", (event) => {
             if (event.detail.lightboxId === "uploaddoc-lightbox") {
@@ -359,15 +372,14 @@ class Step5Handler {
 
         this.calculateTotalFileSize();
     }
-    selectFile(){
-        this.selectedFileName = this.fakeFileNames[Math.floor(Math.random() * this.fakeFileNames.length)];
-
-        this.fileNameDisplay.textContent = this.selectedFileName;
-        this.hiddenFileInput.value = this.selectedFileName;
-
-        // Generate a random file size in KB (stored as a number)
-    const fakeSize = Math.floor(Math.random() * 450) + 50; // Generates 50-500 KB
-    this.hiddenFileSize.value = fakeSize; // Store size as a number
+    selectFile(file){
+        
+        let fileName = file.childNodes[1].nodeValue.trim();
+        this.fileNameDisplay.textContent = fileName;
+        this.hiddenFileInput.value = fileName;
+        const fakeSize = Math.floor(Math.random() * 450) + 50; // Generates 50-500 KB
+        this.hiddenFileSize.value = fakeSize; // Store size as a number
+        
     }
 
     openEditLightbox(index, rowData) {
@@ -485,7 +497,7 @@ class Step6Handler {
                 subTable: subTableData
             });
         });
-        //this.loadSupportingDocuments();
+       
 
         // Listen for edit button clicks
         document.addEventListener("editPanelEvent", (event) => {
@@ -519,7 +531,6 @@ class Step6Handler {
     }
     
 }
-
 
 class PanelObj {
     constructor({ container, title, data, editButton = false, editIndex = null, reviewPanel = false, labels = null, subTable = null }) {
@@ -581,7 +592,11 @@ class PanelObj {
             <table class="panel-data">
                 ${tableRows}
             </table>
+            <div>
+
             ${subTableHTML} <!-- Dynamically insert sub-table if applicable -->
+                        </div>
+
         `;
 
         this.container.appendChild(this.panelElement);
@@ -685,8 +700,6 @@ class TableObj {
         this.refreshTable();
 
         document.dispatchEvent(new CustomEvent("rowDeleted"));
-
-       
     }
 
     refreshTable() {
@@ -777,11 +790,18 @@ class FormLightbox {
                 input.value = "";
             }
         });
+        let hiddenEls = this.form.querySelectorAll("[data-inithidden]");
+        if(hiddenEls.length > 0){
+            hiddenEls.forEach(el => {
+                el.classList.add("hidden");
+            })
+        }
         // Reset spans with data-formelement
         this.form.querySelectorAll("[data-formelement]").forEach(span => {
         span.textContent = span.dataset.placeholder || "";
         });
     }
+
     populateForm(data) {
         if (!this.form) return;
         Object.keys(data).forEach((key) => {
@@ -920,8 +940,6 @@ class ProgressiveDisclosure {
             });
         }
     }
-
-
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -969,7 +987,6 @@ document.addEventListener('DOMContentLoaded', () => {
         stepper.jumpStep(savedStepId);
     }
 
-
     // Add event listeners to all next buttons
     document.querySelector('.stepper').addEventListener('click', (event) => {
         if (event.target.classList.contains('next-button')) {
@@ -990,7 +1007,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
     //Add asterisks to all required fields
     const requiredInputs = document.querySelectorAll('.required-label');
     requiredInputs.forEach(input => {
@@ -1003,22 +1019,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     });
   
-    //document.querySelectorAll('.dynamic-table').forEach(table => { new DynamicTable(table.id) });
-    //document.querySelectorAll('.lightbox-container').forEach(lb => new FormLightbox(lb));
-
-
     //Accordion functionality
     const accordions = document.querySelectorAll('.accordion');
     accordions.forEach(accordion => {
         accordion.addEventListener('click', function() {
             this.classList.toggle('active');
-            const accordionContent = this.nextElementSibling;
+            //const accordionContent = this.nextElementSibling;
 
-            if (panel.style.maxHeight) {
-                panel.style.maxHeight = null;
-            } else {
-                panel.style.maxHeight = panel.scrollHeight + 'px';
-            }
+            // if (panel.style.maxHeight) {
+            //     panel.style.maxHeight = null;
+            // } else {
+            //     panel.style.maxHeight = panel.scrollHeight + 'px';
+            // }
         });
     });
     
