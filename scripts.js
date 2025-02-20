@@ -325,13 +325,15 @@ class Step5Handler {
         this.hiddenFileSize = document.getElementById("s5-size");
         
 
-        if(!this.browseFileButton) return;
+        if(!this.browseFileButton) return; 
 
         this.fakeFileNames = [
             "Contract_Agreement.pdf",
             "Estate_Document.docx",
             "Final_Tax_return.xlsx",
             "LegalDeclaration.pdf"
+            //will, detailed asset list, detailed statement of assets being distributed,
+            //fake ones: copy of mortage statement, etc. fake financial docs
         ];
 
         this.browseFileButton.addEventListener("click", () => this.selectFile());
