@@ -15,6 +15,27 @@
                 </div>
                 <a href="#" class="language-switch">Français</a>
             </div>
+            <div class="portal-header">
+                <div class="content">
+                <div class="portal-branding">
+                    <div>
+                        <span class="heading">Canada Revenue Agency</span>
+                        <br>Represent a Client
+                    </div>
+                    <div>
+                        <span class="inline-flex" id="task-accountuser-type">
+                            <span class="material-icons">person</span>Individual client
+                        </span><BR>
+                        <span class="uppercase" id="task-accountuser-name">
+                        </span>
+                    </div>
+                </div>
+                <div class="inline-flex">
+                    <span class="material-icons">account_circle</span>
+                    <span class="uppercase" id="task-rep-name"></span>
+                </div>
+                </div>
+            </div>
         </header>
         <div class="confirmation-wrapper">
             <h1>TX19 - Confirmation</h1>
@@ -44,4 +65,28 @@
             <button class="btn btn-primary next-button" type="button">Return to Overview</button>
         </div>
     </body>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let deceasedInfo = JSON.parse(sessionStorage.getItem("deceasedInfo")) || {};
+            let legalRep = JSON.parse(sessionStorage.getItem("legalRepresentative")) || {};
+            let racUserName = sessionStorage.getItem("racUserName");
+            console.log(deceasedInfo, legalRep, racUserName)
+        
+            // Set the deceased individual's name
+            if (deceasedInfo.name) {
+                document.getElementById("task-accountuser-name").textContent = deceasedInfo.name;
+            } 
+        
+            // Set the representative's name
+            if (racUserName) {
+                document.getElementById("task-rep-name").textContent = racUserName;
+            } else if (legalRep.name) {
+                document.getElementById("task-rep-name").textContent = legalRep.name;
+            } 
+        });
+        </script>
+        
+
 </html>
+

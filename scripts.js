@@ -199,6 +199,9 @@ class Step3Handler {
         document.addEventListener("editPanelEvent", (event) => {
             this.editPanelData(event.detail.index);
         });
+        document.addEventListener("deletePanelEvent", (event) => {
+            this.deletePanelData(event.detail.index);
+        });
        
     }
 
@@ -260,6 +263,7 @@ class Step3Handler {
                     data: this.legalRep,
                     editButton: false, 
                     editIndex: "legalRep",
+                    deleteButton: false,
                     reviewPanel: false,
                     labels: ["Name", "Mailing address"]
                 });
@@ -279,6 +283,7 @@ class Step3Handler {
                     data: this.legalRep,
                     editButton: true, 
                     editIndex: "legalRep",
+                    deleteButton: true,
                     reviewPanel: false,
                     labels: ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"]
                 });
@@ -298,6 +303,7 @@ class Step3Handler {
                 data: recipient,
                 editButton: true, 
                 editIndex: index,
+                deleteButton: true,
                 labels: ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"]
             })
         });
@@ -311,12 +317,25 @@ class Step3Handler {
         this.addRepLightbox.setEditIndex(index);
     }
 
+    deletePanelData(index) {
+        if (index === "legalRep") {
+            DataManager.clearData("legalRepresentative");
+            this.legalRep = null;
+        } else {
+            this.mailRecipients.splice(index, 1);
+            DataManager.saveData("mailRecipients", this.mailRecipients);
+        }
+    
+        this.updateRepresentativePanels();
+    }
+    
+
    
 }
 
 class Step5Handler {
     constructor() {
-        this.tempData = null; // Temporary storage for lightbox data
+        //this.tempData = null; // Temporary storage for lightbox data
         this.documentsTable = new TableObj("tb-upload-doc");
         this.uploadDocLightbox = new FormLightbox(document.getElementById("uploaddoc-lightbox"));
 
@@ -331,14 +350,6 @@ class Step5Handler {
 
         if(!this.browseFileButton) return; 
 
-        // this.fakeFileNames = [
-        //     "Contract_Agreement.pdf",
-        //     "Estate_Document.docx",
-        //     "Final_Tax_return.xlsx",
-        //     "LegalDeclaration.pdf"
-        //     //will, detailed asset list, detailed statement of assets being distributed,
-        //     //fake ones: copy of mortage statement, etc. fake financial docs
-        // ];
 
         this.browseFileButton.addEventListener("click", () => {
             this.browseWindow.classList.remove('hidden');
@@ -443,12 +454,27 @@ class Step6Handler {
     constructor(stepper) {
         this.stepper = stepper;
         this.reviewContainer = document.getElementById("s6-review-container");
+        this.submitBtn = document.getElementById("appsubmit-btn");
         this.populateReview();
 
         // Listen for navigation events
         document.addEventListener("navigateToStep", (event) => {
             this.stepper.setActive(this.stepper.steps[event.detail.index]);
         });
+
+        this.submitBtn.addEventListener('click', () => {
+            // Store necessary data in sessionStorage to retrieve on confirmation page
+            sessionStorage.setItem("deceasedInfo", JSON.stringify(DataManager.getData("deceasedInfo")));
+            sessionStorage.setItem("legalRepresentative", JSON.stringify(DataManager.getData("legalRepresentative")));
+            sessionStorage.setItem("racUserName", JSON.stringify(DataManager.getData("racUserName")));
+        
+            // Redirect to confirmation page
+            window.location.href = "confirmation.html";
+        });
+        
+
+
+
     }
 
     populateReview() {
@@ -533,12 +559,13 @@ class Step6Handler {
 }
 
 class PanelObj {
-    constructor({ container, title, data, editButton = false, editIndex = null, reviewPanel = false, labels = null, subTable = null }) {
+    constructor({ container, title, data, editButton = false, editIndex = null, deleteButton = false, reviewPanel = false, labels = null, subTable = null }) {
         this.container = container; // The DOM element where the panel should be appended
         this.title = title;
         this.data = data;
         this.editButton = editButton;
         this.editIndex = editIndex;
+        this.deleteButton = deleteButton;
         this.reviewPanel = reviewPanel;
         this.labels = labels; // Store optional labels
         this.subTable = subTable;
@@ -547,12 +574,15 @@ class PanelObj {
     }
 
     render() {
+
         this.panelElement = document.createElement("div");
         this.panelElement.classList.add("panel");
 
         let editButtonHTML = this.editButton ? 
             `<button type="button" class="btn-tertiary edit-btn" data-index="${this.editIndex}"><span class="material-icons">edit</span>Edit</button>` : "";
 
+        let deleteButtonHTML = this.deleteButton ? 
+        `<button type="button" class="btn-tertiary delete-btn" data-index="${this.editIndex}"><span class="material-icons">delete</span>Delete</button>` : "";
         // Generate table rows for main data
         let tableRows = Object.entries(this.data)
             .map(([key, value], index) => {
@@ -587,7 +617,11 @@ class PanelObj {
         this.panelElement.innerHTML = `
             <div class="heading-row">
                 <h5>${this.title}</h5>
+                <div>
                 ${editButtonHTML}
+                ${deleteButtonHTML}
+                </div>
+                
             </div>
             <table class="panel-data">
                 ${tableRows}
@@ -601,8 +635,15 @@ class PanelObj {
 
         this.container.appendChild(this.panelElement);
 
-        if (this.editButton) {
-            this.panelElement.querySelector(".edit-btn").addEventListener("click", () => this.emitEditEvent());
+        const editButton = this.panelElement.querySelector(".edit-btn");
+
+        if (editButton) {
+            editButton.addEventListener("click", () => this.emitEditEvent());
+        }
+        const deleteButton = this.panelElement.querySelector(".delete-btn");
+
+        if(deleteButton){
+            deleteButton.addEventListener("click", () => this.emitDeleteEvent());
         }
     }
 
@@ -624,6 +665,12 @@ class PanelObj {
             }));
         }
     }
+    emitDeleteEvent() {
+        document.dispatchEvent(new CustomEvent("deletePanelEvent", {
+            detail: { index: this.editIndex, panelTitle: this.title }
+        }));
+    }
+    
 }
 
 
@@ -1018,6 +1065,7 @@ document.addEventListener('DOMContentLoaded', () => {
         input.insertBefore(asterisk, input.firstChild);
     }
     });
+
   
     //Accordion functionality
     const accordions = document.querySelectorAll('.accordion');
@@ -1036,6 +1084,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
 });
 
-window.addEventListener('beforeunload', () => {
-    sessionStorage.clear();
+///start here - not working
+window.addEventListener('beforeunload', (event) => {
+    // Get the next URL the user is navigating to
+    let nextPage = document.activeElement?.href || document.referrer;
+
+    // If the next page is NOT the confirmation page, clear session storage
+    console.log(nextPage)
+    if (!nextPage.includes("confirmation.html")) {
+        sessionStorage.clear();
+    }
 });
