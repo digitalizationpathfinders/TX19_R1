@@ -673,6 +673,7 @@ class PanelObj {
     
 }
 
+
 class TableObj {
     constructor (tableID) {
         this.table = document.getElementById(tableID);

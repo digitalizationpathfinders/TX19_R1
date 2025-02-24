@@ -15,10 +15,31 @@
                 </div>
                 <a href="#" class="language-switch">Français</a>
             </div>
+            <div class="portal-header">
+                <div class="content">
+                <div class="portal-branding">
+                    <div>
+                        <span class="heading">Canada Revenue Agency</span>
+                        <br>Represent a Client
+                    </div>
+                    <div>
+                        <span class="inline-flex" id="task-accountuser-type">
+                            <span class="material-icons">person</span>Individual client
+                        </span><BR>
+                        <span class="uppercase" id="task-accountuser-name">
+                        </span>
+                    </div>
+                </div>
+                <div class="inline-flex">
+                    <span class="material-icons">account_circle</span>
+                    <span class="uppercase" id="task-rep-name"></span>
+                </div>
+                </div>
+            </div>
         </header>
         <main class="stepper">
             <h1>TX19 - Asking for a clearance certificate</h1>
-            <section class="step" id="step-0">
+            <section class="step active" id="step-0">
                 <div class="step-header">
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
@@ -27,7 +48,20 @@
                 </div>
                 <div class="step-content">
                     <div class="container">
-                        <p>A clearance certificate allows the legal representative to distribute assets without the risk of being held personally responsible for unpaid amounts of the person who died, estate, trust, or corporation might owe the CRA. The legal representative’s financial institution or lawyers may also ask them for a clearance certificate.</p>
+                        <p>A clearance certificate allows the legal representative to distribute assets without the risk of being held personally responsible for unpaid amounts the person who died, estate, trust, or corporation might owe the CRA. The legal representative’s financial institution or lawyers may also ask them for a clearance certificate.</p>
+                        <div class="alert">
+                            <div class="alert-info">
+                                <div class="line"></div>
+                                <div><span class="material-icons">
+                                    info
+                                    </span>
+                                </div>
+                                <div class="line"></div>
+                            </div>
+                            <div class="alert-content">
+                                This deceased individual certificate covers income earned up to the date of death. If you require an estate trust final clearance, you must also file a clearance certificate through My Trust Account within Represent a Client.
+                            </div>
+                        </div>
                         <button type="button" class="accordion">Documents you must have to submit your request</button>
                         <div class="accordion-content">
                             <ul>
@@ -46,7 +80,7 @@
                                 <li>A list of the names, addresses, and tax identification numbers, such as social insurance numbers, of any beneficiaries of property other than cash</li>
                             </ul>
                             <br>
-                            <p>If documents related to this request were submitted previously, you will be required to provide the case/reference number.</p>
+                            <p>If documents related to this request were submitted previously, you will be required to provide the reference number and/or confirmation number.</p>
                         </div>
                         <button class="btn btn-primary next-button" type="button">Begin</button>
                     </div>
@@ -137,7 +171,7 @@
                                 </div>
                             </fieldset>
                             <fieldset id="s1q4-fieldset" class="hidden" data-radio-group>
-                                <legend class="required-label"> Are there currently any outstanding requests with the CRA (for example, an adjustment, objection, taxpayer relief, etc.)?</legend>
+                                <legend class="required-label"> Are there currently any outstanding requests with the CRA (for example, an adjustment, appeal, objection, taxpayer relief, etc.)?</legend>
                                 <div class="group">
                                     <input type="radio" id="s1q4-op1" name="s1q4" value="Yes" data-toggle="alert-outstandingcase">
                                     <label for="s1q4-op1"></label>
@@ -168,7 +202,7 @@
                 </div>
             </section>
 
-            <section class="step active" id="step-2">
+            <section class="step" id="step-2">
                 <div class="step-header">
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
@@ -179,22 +213,9 @@
                     <div class="container">
                         <form id="step-2-form">
                             <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
-                            <div class="panel" id="deceasedinfo-panel-container">
-                                <h5>Deceased individual’s information on file</h5>
-                                <table class="panel-data">
-                                    <tr class="row">
-                                        <td class="label">Name of deceased</td>
-                                        <td>(taxpayer name)</td>
-                                    </tr>
-                                    <tr class="row">
-                                        <td class="label">Social Insurance Number (SIN)</td>
-                                        <td>123 456 789</td>
-                                    </tr>
-                                    <tr class="row">
-                                        <td class="label">Date of death</td>
-                                        <td>2023-11-20</td>
-                                    </tr>
-                                </table>
+                            <div id="deceasedinfo-panel-container">
+
+                          
                             </div>
                             <fieldset id="s2q1-fieldset" data-radio-group>
                                 <legend class="required-label"> Did the deceased taxpayer have a will?</legend>
@@ -285,7 +306,6 @@
                     <div class="container">
                         <form id="step-3-form">
                             <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
-                            <br>
                             <div id="legalrep-container">
                                 <div id="legalrep-panel-container"></div>
 
@@ -305,19 +325,20 @@
                             <fieldset id="legalrepinfo-fieldset">
                             <label class="required-label" for="s3-reptel1">Telephone number</label>
                                                 <input type="text" id="s3-reptel1" name="s3-reptel1">
-                            <label class="required-label" for="s3-reprole">Role</label>
-                            <select id="s3-reprole" name="s3-reprole">
-                                <option value="Select" selected>(Select)</option>
-                                <option value="saab">Saab</option>
-                                <option value="fiat">Fiat</option>
-                                <option value="audi">Audi</option>
-                            </select>
+                            <label class="required-label" for="s3-reprole">Role</label>                        
+                                <select id="s3-reprole" name="s3-reprole">
+                                    <option value="" selected>(Select)</option>
+                                    <option value="Executor/Executrix">Executor/Executrix</option>
+                                    <option value="Administrator">Administrator</option>
+                                    <option value="Liquidator">Liquidator</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            
                             </fieldset>
 
                         </div><br>
                         <div id="mailrecip-container"></div>
                            
-                            
                             <div class="alert" id="alert-norep">
                                 <div class="alert-warning">
                                     <div class="line"></div>
@@ -364,11 +385,12 @@
                                             </div>
                                             <div>
                                                 <label class="required-label" for="s3-reprole">Role of representative</label>
-                                                <select id="s3-reprole" name="s3-reprole">
-                                                    <option value="Select" selected>(Select)</option>
-                                                    <option value="saab">Saab</option>
-                                                    <option value="fiat">Fiat</option>
-                                                    <option value="audi">Audi</option>
+                                                <select id="s3-reprole-lb" name="s3-reprole">
+                                                    <option value="" selected>(Select)</option>
+                                                    <option value="Executor/Executrix">Executor/Executrix</option>
+                                                    <option value="Administrator">Administrator</option>
+                                                    <option value="Liquidator">Liquidator</option>
+                                                    <option value="Other">Other</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -384,11 +406,11 @@
                                                 <label for="s3-country-op2"></label>
                                             </div>
                                             </fieldset>
-                                            <div id="s3-canada-address" class="hidden">
+                                            <div id="s3-canada-address" data-inithidden class="hidden">
                                                 <div class="field-row">
                                                     <div>
                                                         <label class="required-label" for="s3-caddress">Mailing address</label>
-                                                        <input type="text" id="s3-caddress" name="s3-rep-caddress">
+                                                        <input type="text" id="s3-caddress" name="s3-caddress">
                                                     </div>
                                                     <div>
                                                         <label class="required-label" for="s3-repcity">City, town or community</label>
@@ -399,7 +421,7 @@
                                                     <div>
                                                         <label class="required-label" for="s3-repprov">Province</label>
                                                         <select id="s3-repprov" name="s3-repprov">
-                                                            <option value="Select" selected>(Select)</option>
+                                                            <option value="" selected>(Select)</option>
                                                             <option value="Alberta">Alberta</option>
                                                             <option value="British Columbia">British Columbia</option>
                                                             <option value="Manitoba">Manitoba</option>
@@ -462,13 +484,12 @@
                     <div class="step-number">
                         <span class="step-icon material-icons">check</span>
                     </div>
-                    <h2>Type of clearance</h2>
+                    <h2>Tax return information</h2>
                 </div>
                 <div class="step-content">
                     <div class="container">
                         <form id="step-4-form">
                             <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
-                            <p>This type of clearance certificate covers income earned up to the date of death.</p>
                             <fieldset id="s4q1-fieldset" required>
                                 <legend class="required-label">
                                     What tax return(s) were filed?
@@ -506,7 +527,9 @@
                     <h2>Supporting documents</h2>
                 </div>
                 <div class="step-content">
-                    <form id="step-4-form">
+                    <div class="container">
+
+                    <form id="step-5-form">
                         <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
                         <br>
                         <fieldset id="s5q1-fieldset" required>
@@ -557,8 +580,13 @@
                                 </span>
                                 Attach document</button>
                             </div>
+                            <div id="uploadedfile-info" style="text-align:right;">
+                                Total size: <span id="uploadedfiles-size"></span><br>
+                                Maximum total file upload size is 500 MB
+                            </div>
                         </fieldset>
                     </form>
+                    </div>
                     <div class="lightbox-container" id="uploaddoc-lightbox">
                         <div class="lightbox">
                             <div class="header">
@@ -582,6 +610,15 @@
                                     <input type="text" id="s5-desc" name="s5-desc" maxlength="150" required>
                                     <input type="hidden" id="s5-size" name="s5-size">
                                 </form>
+                                <div id="s5-browsewind" class="browse-window hidden">
+                                    <div class="browse-window-header">Browse</div>
+                                        <ul class="file-list">
+                                            <li id="contract-doc" class="file-item"><span class="material-icons file-icon">insert_drive_file</span>WillTestament.pdf</li>
+                                            <li id="detailedassets-doc"  class="file-item"><span class="material-icons file-icon">insert_drive_file</span>DetailedAssetsList.docx</li>
+                                            <li id="assetdistribution-doc" class="file-item"><span class="material-icons file-icon">insert_drive_file</span>AssetDistribution_List.docx</li>
+                                            <li id="mortgage-doc" class="file-item"><span class="material-icons file-icon">insert_drive_file</span>MortgageStatement.docx</li>
+                                        </ul>
+                                </div>
                             </div>
                             <div class="buttons">
                                 <button class="btn-primary" type="button" data-submit>Upload document</button>
@@ -602,9 +639,28 @@
                     <h2>Review and submit</h2>
                 </div>
                 <div class="step-content">
-                    <p>step content</p>
+                    <div class="container">
+
+                    <form id="step-6-form">
+                        <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
+                        <div id="s6-review-container">
+                          
+                        </div>
+                        <fieldset id="s6q1-fieldset" required>
+                            <legend class="required-label">
+                                Declaration
+                            </legend>
+                        <div class="group">
+
+                        <input type="checkbox" id="s6q1-op1" name="s6q1" value="I confirm...">
+                        <label for="s6q1-op1"></label>
+                        </div>
+                        </fieldset>
+                    </form>
+                    </div>
+                    
                     <button class="btn btn-secondary back-button" type="button">Back</button>
-                    <button class="btn btn-primary next-button" type="button">Next</button>
+                    <button id="appsubmit-btn" class="btn btn-primary" type="button">Submit</button>
                 </div>
             </section>
         </main>
