@@ -1021,7 +1021,6 @@ class ProgressiveDisclosure {
 
         if (!nextBtn) return; // If no next button is found, exit
 
-    
         if (isOut) {
             nextBtn.textContent = "Return to Overview";
             nextBtn.classList.add("out-button");
@@ -1030,7 +1029,7 @@ class ProgressiveDisclosure {
         } else {
             nextBtn.textContent = "Next";
             nextBtn.classList.remove("out-button");
-            nextBtn.onclick = () => stepper.navigateStep("next");
+            nextBtn.onclick = () => this.stepper.navigateStep("next");
             backBtn.style.display = "inline-block";
         }
     }
