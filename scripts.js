@@ -558,6 +558,8 @@ class Step6Handler {
     
 }
 
+
+
 class PanelObj {
     constructor({ container, title, data, editButton = false, editIndex = null, deleteButton = false, reviewPanel = false, labels = null, subTable = null }) {
         this.container = container; // The DOM element where the panel should be appended
@@ -892,15 +894,27 @@ class ProgressiveDisclosure {
     constructor(stepperInstance = null) {
         this.stepper = stepperInstance; // Optionally pass the stepper instance
         this.initializeEventListeners();
+        this.outConditions = [
+            //step 1 selections that result in an "out"
+            ["s1q1-op2"], 
+            ["s1q2-op2"], 
+            ["s1q3-op1"],
+            ["s1q4-op1"] 
+        ];
         
     }
 
     initializeEventListeners() {
         // Attach change event to all elements with the `data-toggle` attribute
-        document.querySelectorAll('[data-toggle], input[type="radio"]').forEach(input => {
-            input.addEventListener('change', this.handleToggle.bind(this));
+        document.querySelectorAll('[data-toggle], input[type="radio"], input[type="checkbox"]').forEach(input => {
+            input.addEventListener('change', this.handleInputChange.bind(this));
+            
         });
 
+    }
+    handleInputChange(event) {
+        this.handleToggle(event); // Ensure Progressive Disclosure still works
+        this.outCheck(); // Check if the user should be redirected
     }
 
     handleToggle(event) {
@@ -987,6 +1001,40 @@ class ProgressiveDisclosure {
             });
         }
     }
+
+    
+    outCheck (){
+        let selectedInputs = Array.from(document.querySelectorAll('input:checked')).map(input => input.id);
+    
+        let isOut = this.outConditions.some(conditionSet => conditionSet.every(id => selectedInputs.includes(id)));
+    
+        this.updateNavigationButtons(isOut);
+    
+    }
+    
+    updateNavigationButtons(isOut) {
+        const activeStep = document.querySelector('.step.active'); // Get the current active step
+        if (!activeStep) return;
+
+        const nextBtn = activeStep.querySelector('.next-button');
+        const backBtn = activeStep.querySelector('.back-button');
+
+        if (!nextBtn) return; // If no next button is found, exit
+
+    
+        if (isOut) {
+            nextBtn.textContent = "Return to Overview";
+            nextBtn.classList.add("out-button");
+            nextBtn.onclick = () => window.location.href = "chooser.html";
+            backBtn.style.display = "none";
+        } else {
+            nextBtn.textContent = "Next";
+            nextBtn.classList.remove("out-button");
+            nextBtn.onclick = () => stepper.navigateStep("next");
+            backBtn.style.display = "inline-block";
+        }
+    }
+    
 }
 
 document.addEventListener('DOMContentLoaded', () => {

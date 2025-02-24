@@ -776,7 +776,7 @@ textarea {
 }
 .panel-data tr {
   display: flex;
-  justify-content:flex-start;
+  justify-content:space-between;
   align-items: flex-start;
   border-bottom:0.05em solid #808080; 
   padding:12px 0;
@@ -788,6 +788,7 @@ textarea {
 
 .panel-data td {
   padding:6px 0;
+  width:40%
 }
 
 .panel-data .label {
