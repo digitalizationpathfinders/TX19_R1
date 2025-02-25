@@ -42,27 +42,22 @@ class Stepper {
     updateStepNumbers() {
         this.steps.forEach((step, index) => {
             let stepNumberElement = step.querySelector('.step-number');
-    
             if (!stepNumberElement) return;
     
-            if (step === this.activeStep) {
-                // ✅ Active step: Dark blue, displays step number
-                stepNumberElement.style.backgroundColor = "#26374A";
-                stepNumberElement.style.color = "#FFFFFF";
-                stepNumberElement.innerHTML = index + 1;
-            } else if (index < this.steps.indexOf(this.activeStep)) {
-                // ✅ Completed steps: Dark blue, displays checkmark
-                stepNumberElement.style.backgroundColor = "#26374A";
-                stepNumberElement.style.color = "#FFFFFF";
-                stepNumberElement.innerHTML = `<span class="material-icons">check</span>`;
-            } else {
-                // ✅ Future steps: Grey, displays step number
-                stepNumberElement.style.backgroundColor = "#6F6F6F";
-                stepNumberElement.style.color = "#FFFFFF";
-                stepNumberElement.innerHTML = index + 1;
-            }
+            const isActive = step === this.activeStep;
+            const isCompleted = index < this.steps.indexOf(this.activeStep);
+    
+            this.styleStepNumber(stepNumberElement, index, isActive, isCompleted);
         });
     }
+    
+    
+    styleStepNumber(element, index, isActive, isCompleted) {
+        element.style.backgroundColor = isActive || isCompleted ? "#26374A" : "#6F6F6F";
+        element.style.color = "#FFFFFF";
+        element.innerHTML = isCompleted ? `<span class="material-icons">check</span>` : index + 1;
+    }
+    
 
     observeStepContentChanges() {
         const observer = new MutationObserver((mutations) => {
@@ -188,7 +183,6 @@ class Step2Handler {
     
     }
 }
-
 class Step3Handler {
     constructor() {
         this.userLevel = parseInt(DataManager.getData("userLevel")) || 2;
@@ -238,7 +232,7 @@ class Step3Handler {
     handleFormSubmit(formData) {
         const editIndex = this.addRepLightbox.getEditIndex();
 
-        let address = " ";
+        let address = null;
         if (formData["s3-country"] === "Canada") {
             address = `${formData["s3-caddress"]}<br>${formData["s3-repcity"]}, ${formData["s3-repprov"]} ${formData["s3-reppostcode"]}<br>Canada`;
         } else if (formData["s3-country"] === "Outside of Canada") {
@@ -247,7 +241,7 @@ class Step3Handler {
 
         const newRepresentative = {
             name: formData["s3-repname"] || null,
-            address: address,
+            address: address || null,
             phone: formData["s3-reptel1"] || null,
             altPhone: formData["s3-reptel2"] || null,
             role: formData["s3-reprole"] || null
@@ -276,7 +270,6 @@ class Step3Handler {
     updateRepresentativePanels() {
         this.repPanelContainer.innerHTML = "";
         this.mailRecipContainer.innerHTML = ""; 
-        console.log(this.legalRep)
 
         if (this.legalRep) {
             this.showLegalRepView();
@@ -314,15 +307,13 @@ class Step3Handler {
         this.warningAlert.classList.add("hidden");
         this.infoAlert.classList.remove("hidden");
         this.legalRepInfoFieldset.classList.toggle("hidden", this.userLevel !== 3);
-        this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
-        this.lightboxHeader.innerHTML = "Add additional mail recipient";
-        this.lightboxButton.innerHTML = "Add additional mail recipient";
+        this.updatePanelButtonText("Add additional mail recipient");
     }
     showNoLegalRepView(){
         this.warningAlert.classList.remove("hidden");
         this.infoAlert.classList.add("hidden");
         this.legalRepInfoFieldset.classList.add("hidden");
-        this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add legal representative information`;
+        this.updatePanelButtonText("Add legal representative information");
     
     }
     getLegalRepLabels() {
@@ -336,6 +327,12 @@ class Step3Handler {
     getMailRecipientLabels(recipient) {
         let labels = ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"];
         return labels;
+    }
+
+    updatePanelButtonText(text){
+        this.addRepButton.innerHTML = `<span class="material-icons">add</span> ${text}`;
+        this.lightboxHeader.innerHTML = text;
+        this.lightboxButton.innerHTML = text;
     }
 
     createPanel({ container, title, data, editButton, editIndex, deleteButton, reviewPanel, labels }) {
@@ -374,7 +371,6 @@ class Step3Handler {
 
    
 }
-
 class Step5Handler {
     constructor() {
         //this.tempData = null; // Temporary storage for lightbox data
@@ -491,7 +487,6 @@ class Step5Handler {
 
     
 }
-
 class Step6Handler {
     constructor(stepper) {
         this.stepper = stepper;
@@ -518,7 +513,7 @@ class Step6Handler {
     populateReview() {
         this.reviewContainer.innerHTML = ""; // Clear previous content
     
-        const stepsToReview = [
+        const steps = [
             { stepNum: 1, title: "Pre-screening", storageKey: "stepData_1" },
             { stepNum: 2, title: "Deceased individual’s information", storageKey: "deceasedInfo", labels: ["Name of deceased", "Social insurance number (SIN)", "Date of death"]  },
             { stepNum: 3, title: "Representative's information", storageKey: "stepData_3" },
@@ -526,67 +521,67 @@ class Step6Handler {
             { stepNum: 5, title: "Supporting documentation", storageKey: "stepData_5" },
         ];
     
-        stepsToReview.forEach(({ stepNum, title, storageKey, labels }) => {
+        steps.forEach(({ stepNum, title, storageKey, labels }) => {
             let data = DataManager.getData(storageKey);
             if (!data) return; // Skip empty steps
     
-            // Replace field names with question labels
-            let formattedData = {};
-            let subTableData = null; // Placeholder for subtable
+           // Replace field names with question labels
+           let formattedData = {};
+           let subTableData = null; // Placeholder for subtable
 
-            // Check if it's Step 5 (Supporting Documents)
-            if (stepNum === 3) {
-                let legalRep = DataManager.getData("legalRepresentative");
-                let mailRecipients = DataManager.getData("mailRecipients") || [];
+           // Check if it's Step 5 (Supporting Documents)
+           if (stepNum === 3) {
+               let legalRep = DataManager.getData("legalRepresentative");
+               let mailRecipients = DataManager.getData("mailRecipients") || [];
 
-                // Add Legal Representative first
-                if (legalRep) {
-                    formattedData["Legal Representative Name"] = legalRep.name || "N/A";
-                    formattedData["Mailing Address"] = legalRep.address || "N/A";
-                    formattedData["Role"] = legalRep.role || "N/A";
-                    formattedData["Telephone Number"] = legalRep.phone || "N/A";
-                    formattedData["Alternate Telephone Number"] = legalRep.altPhone || "N/A";
-                }
-                mailRecipients.forEach((recipient, index) => {
-                    formattedData[`Mail Recipient ${index + 1} Name`] = recipient.name || "N/A";
-                    formattedData[`Mail Recipient ${index + 1} Mailing Address`] = recipient.address || "N/A";
-                    formattedData[`Mail Recipient ${index + 1} Telephone Number`] = recipient.phone || "N/A";
-                    if (recipient.altPhone && recipient.altPhone.trim() !== "") {
-                        formattedData[`Mail Recipient ${index + 1} Alternate Telephone Number`] = recipient.altPhone;
-                    }
-                });
-        
-            
+               // Add Legal Representative first
+               if (legalRep) {
+                   formattedData["Legal Representative Name"] = legalRep.name || "N/A";
+                   formattedData["Mailing Address"] = legalRep.address || "N/A";
+                   formattedData["Role"] = legalRep.role || "N/A";
+                   formattedData["Telephone Number"] = legalRep.phone || "N/A";
+                   formattedData["Alternate Telephone Number"] = legalRep.altPhone || "N/A";
+               }
+               mailRecipients.forEach((recipient, index) => {
+                   formattedData[`Mail Recipient ${index + 1} Name`] = recipient.name || "N/A";
+                   formattedData[`Mail Recipient ${index + 1} Mailing Address`] = recipient.address || "N/A";
+                   formattedData[`Mail Recipient ${index + 1} Telephone Number`] = recipient.phone || "N/A";
+                   if (recipient.altPhone && recipient.altPhone.trim() !== "") {
+                       formattedData[`Mail Recipient ${index + 1} Alternate Telephone Number`] = recipient.altPhone;
+                   }
+               });
+       
+           
 
-            }
-            else if (stepNum === 5 && data["uploadedDocuments"]) {
-                subTableData = {
-                    title: "Attachments",
-                    headers: ["Name", "Description", "File Size"],
-                    columns: ["s5-filename", "s5-desc", "s5-size"],
-                    rows: data["uploadedDocuments"] || [] // Ensure it's always an array
-                };
-                delete data["uploadedDocuments"];
-            }
+           }
+           else if (stepNum === 5 && data["uploadedDocuments"]) {
+               subTableData = {
+                   title: "Attachments",
+                   headers: ["Name", "Description", "File Size"],
+                   columns: ["s5-filename", "s5-desc", "s5-size"],
+                   rows: data["uploadedDocuments"] || [] // Ensure it's always an array
+               };
+               delete data["uploadedDocuments"];
+           }
 
-            if (stepNum !== 3) { // Avoid overwriting Step 3 data
-                Object.keys(data).forEach((key, index) => {
-                    let questionLabel = labels && labels[index] ? labels[index] : this.getLabelForInput(key);
-                    formattedData[questionLabel] = data[key]; // Assign label instead of raw key
-                });
-            }
-    
-            // Generate panel for each step
-            new PanelObj({
-                container: this.reviewContainer,
-                title: title,
-                data: formattedData, // Use the formatted data with proper labels
-                editButton: true,
-                editIndex: stepNum,
-                reviewPanel: true,
-                subTable: subTableData
-            });
-        });
+           if (stepNum !== 3) { // Avoid overwriting Step 3 data
+               Object.keys(data).forEach((key, index) => {
+                   let questionLabel = labels && labels[index] ? labels[index] : this.getLabelForInput(key);
+                   formattedData[questionLabel] = data[key]; // Assign label instead of raw key
+               });
+           }
+   
+           // Generate panel for each step
+           new PanelObj({
+               container: this.reviewContainer,
+               title: title,
+               data: formattedData, // Use the formatted data with proper labels
+               editButton: true,
+               editIndex: stepNum,
+               reviewPanel: true,
+               subTable: subTableData
+           });
+       });
        
 
         // Listen for edit button clicks
@@ -594,6 +589,8 @@ class Step6Handler {
             this.stepper.setActive(this.stepper.steps[event.detail.index]);
         });
     }
+
+
 
     getLabelForInput(name) {
         let label = "";
@@ -1197,13 +1194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     accordions.forEach(accordion => {
         accordion.addEventListener('click', function() {
             this.classList.toggle('active');
-            //const accordionContent = this.nextElementSibling;
 
-            // if (panel.style.maxHeight) {
-            //     panel.style.maxHeight = null;
-            // } else {
-            //     panel.style.maxHeight = panel.scrollHeight + 'px';
-            // }
         });
     });
     
@@ -1215,7 +1206,6 @@ window.addEventListener('beforeunload', (event) => {
     let nextPage = document.activeElement?.href || document.referrer;
 
     // If the next page is NOT the confirmation page, clear session storage
-    console.log(nextPage)
     if (!nextPage.includes("confirmation.html")) {
         sessionStorage.clear();
     }
