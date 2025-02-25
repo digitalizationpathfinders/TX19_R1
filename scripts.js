@@ -529,7 +529,6 @@ class Step6Handler {
            let formattedData = {};
            let subTableData = null; // Placeholder for subtable
 
-           // Check if it's Step 5 (Supporting Documents)
            if (stepNum === 3) {
                let legalRep = DataManager.getData("legalRepresentative");
                let mailRecipients = DataManager.getData("mailRecipients") || [];
@@ -550,9 +549,6 @@ class Step6Handler {
                        formattedData[`Mail Recipient ${index + 1} Alternate Telephone Number`] = recipient.altPhone;
                    }
                });
-       
-           
-
            }
            else if (stepNum === 5 && data["uploadedDocuments"]) {
                subTableData = {
@@ -583,7 +579,6 @@ class Step6Handler {
            });
        });
        
-
         // Listen for edit button clicks
         document.addEventListener("editPanelEvent", (event) => {
             this.stepper.setActive(this.stepper.steps[event.detail.index]);
@@ -714,7 +709,7 @@ class PanelObj {
     formatKey(key) {
         return key
             .replace(/([A-Z]{2,})/g, match => match) // Keep acronyms like SIN intact
-            .replace(/([a-z])([A-Z])/g, "$1 $2") // Insert spaces only between camelCase words
+            .replace(/([a-z])([A-Z])/g, "$1 $2") // Insert spaces only between words
             .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
             .trim();
     }
@@ -735,7 +730,6 @@ class PanelObj {
             detail: { index: this.editIndex, panelTitle: this.title }
         }));
     }
-    
 }
 
 class TableObj {
@@ -758,7 +752,6 @@ class TableObj {
             this.tbody.innerHTML = "";
         }
         this.rows[rowIndex] = data; // Ensure correct index assignment
-
 
         // Create a new row
         const tr = document.createElement("tr");
@@ -825,7 +818,6 @@ class TableObj {
             this.addRow(rowData, index);
         });
     }
-    
 }
 
 class DataManager {
@@ -866,8 +858,7 @@ class FormLightbox {
             if(this.openTrigger.value){
                 var buttonText = document.createTextNode(this.openTrigger.value);
                 this.openTrigger.appendChild(buttonText)
-            }
-            
+            } 
         }
         this.initializeEventListeners();
     }
@@ -951,7 +942,6 @@ class FormLightbox {
     clearEditIndex() {
         this.editIndex = null;
     }
-   
 }
 
 class ProgressiveDisclosure {

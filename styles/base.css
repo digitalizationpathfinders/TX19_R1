@@ -155,6 +155,7 @@ header {
 }
 .portal-branding div:last-of-type{
   padding-left:12px;
+  font-size:14px;
   display:flex;
 }
 
