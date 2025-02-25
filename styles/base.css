@@ -150,9 +150,15 @@ header {
   padding-right:12px;
   border-right:1px solid #fff;
 }
-.portal-branding div:last-of-type{
+.portal-branding div:nth-of-type(2){
   padding-left:12px;
 }
+.portal-branding div:last-of-type{
+  padding-left:12px;
+  display:flex;
+}
+
+
 
 .portal-header .heading {
   font-size:20px;

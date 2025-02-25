@@ -5,7 +5,9 @@ class Stepper {
         this.observeStepContentChanges(); 
 
         this.stepHandlers = {}; // Store step instances
+        this.updateStepNumbers();
         this.customStepCode(this.steps.indexOf(this.activeStep))
+        
     }
 
     adjustMaxHeight(step) {
@@ -16,9 +18,6 @@ class Stepper {
         }
     }
 
-    // jumpStep(stepId) {
-    //     this.setActive(this.steps.find(step => step.id === stepId));
-    // }
     setActive(step) {
         if (!step) return;
 
@@ -34,9 +33,35 @@ class Stepper {
         step.classList.add('active');
         this.activeStep = step;
 
+        this.updateStepNumbers();
         this.customStepCode(this.steps.indexOf(this.activeStep))
 
         //this.adjustMaxHeight(step); //hiding this fixed the accordion issue, unknown other effects/imapcts though
+    }
+
+    updateStepNumbers() {
+        this.steps.forEach((step, index) => {
+            let stepNumberElement = step.querySelector('.step-number');
+    
+            if (!stepNumberElement) return;
+    
+            if (step === this.activeStep) {
+                // ✅ Active step: Dark blue, displays step number
+                stepNumberElement.style.backgroundColor = "#26374A";
+                stepNumberElement.style.color = "#FFFFFF";
+                stepNumberElement.innerHTML = index + 1;
+            } else if (index < this.steps.indexOf(this.activeStep)) {
+                // ✅ Completed steps: Dark blue, displays checkmark
+                stepNumberElement.style.backgroundColor = "#26374A";
+                stepNumberElement.style.color = "#FFFFFF";
+                stepNumberElement.innerHTML = `<span class="material-icons">check</span>`;
+            } else {
+                // ✅ Future steps: Grey, displays step number
+                stepNumberElement.style.backgroundColor = "#6F6F6F";
+                stepNumberElement.style.color = "#FFFFFF";
+                stepNumberElement.innerHTML = index + 1;
+            }
+        });
     }
 
     observeStepContentChanges() {
@@ -56,11 +81,9 @@ class Stepper {
         });
     }
 
-
     navigateStep(direction) {
         const currentIndex = this.steps.indexOf(this.activeStep);
         const targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-
 
         if (targetIndex >= 0 && targetIndex < this.steps.length) {
            this.storeData(currentIndex);
@@ -212,7 +235,7 @@ class Step3Handler {
         if (formData["s3-country"] === "Canada") {
             address = `${formData["s3-caddress"]}<br>${formData["s3-repcity"]}, ${formData["s3-repprov"]} ${formData["s3-reppostcode"]}<br>Canada`;
         } else if (formData["s3-country"] === "Outside of Canada") {
-            address = `${formData["s3-iaddress"]}`;
+            address = `${formData["s3-rep-iaddress"]}`;
         }
 
         const newRepresentative = {
@@ -471,10 +494,6 @@ class Step6Handler {
             // Redirect to confirmation page
             window.location.href = "confirmation.html";
         });
-        
-
-
-
     }
 
     populateReview() {
@@ -483,12 +502,12 @@ class Step6Handler {
         const stepsToReview = [
             { stepNum: 1, title: "Pre-screening", storageKey: "stepData_1" },
             { stepNum: 2, title: "Deceased individual’s information", storageKey: "deceasedInfo", labels: ["Name of deceased", "Social insurance number (SIN)", "Date of death"]  },
-            { stepNum: 3, title: "Representative's information", storageKey: "legalRepresentative", labels: ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"]},
+            { stepNum: 3, title: "Representative's information", storageKey: "stepData_3" },
             { stepNum: 4, title: "Tax return information", storageKey: "stepData_4" },
             { stepNum: 5, title: "Supporting documentation", storageKey: "stepData_5" },
         ];
     
-        stepsToReview.forEach(({ stepNum, title, storageKey, labels, subtable }) => {
+        stepsToReview.forEach(({ stepNum, title, storageKey, labels }) => {
             let data = DataManager.getData(storageKey);
             if (!data) return; // Skip empty steps
     
@@ -497,20 +516,44 @@ class Step6Handler {
             let subTableData = null; // Placeholder for subtable
 
             // Check if it's Step 5 (Supporting Documents)
-        if (stepNum === 5 && data["uploadedDocuments"]) {
-            subTableData = {
-                title: "Attachments",
-                headers: ["Name", "Description", "File Size"],
-                columns: ["s5-filename", "s5-desc", "s5-size"],
-                rows: data["uploadedDocuments"] || [] // Ensure it's always an array
-            };
-            delete data["uploadedDocuments"];
-        }
+            if (stepNum === 3) {
+                let legalRep = DataManager.getData("legalRepresentative");
+                let mailRecipients = DataManager.getData("mailRecipients") || [];
 
-            Object.keys(data).forEach((key, index) => {
-                let questionLabel = labels && labels[index] ? labels[index] : this.getLabelForInput(key);
-                formattedData[questionLabel] = data[key]; // Assign label instead of raw key
-            });
+                // Add Legal Representative first
+                if (legalRep) {
+                    formattedData["Legal Representative Name"] = legalRep.name || "N/A";
+                    formattedData["Mailing Address"] = legalRep.address || "N/A";
+                    formattedData["Role"] = legalRep.role || "N/A";
+                    formattedData["Telephone Number"] = legalRep.phone || "N/A";
+                    formattedData["Alternate Telephone Number"] = legalRep.altPhone || "N/A";
+                }
+                mailRecipients.forEach((recipient, index) => {
+                    formattedData[`Mail Recipient ${index + 1} Name`] = recipient.name || "N/A";
+                    formattedData[`Mail Recipient ${index + 1} Mailing Address`] = recipient.address || "N/A";
+                    formattedData[`Mail Recipient ${index + 1} Telephone Number`] = recipient.phone || "N/A";
+                    formattedData[`Mail Recipient ${index + 1} Alternate Telephone Number`] = recipient.altPhone || "N/A";
+                });
+        
+            
+
+            }
+            else if (stepNum === 5 && data["uploadedDocuments"]) {
+                subTableData = {
+                    title: "Attachments",
+                    headers: ["Name", "Description", "File Size"],
+                    columns: ["s5-filename", "s5-desc", "s5-size"],
+                    rows: data["uploadedDocuments"] || [] // Ensure it's always an array
+                };
+                delete data["uploadedDocuments"];
+            }
+
+            if (stepNum !== 3) { // Avoid overwriting Step 3 data
+                Object.keys(data).forEach((key, index) => {
+                    let questionLabel = labels && labels[index] ? labels[index] : this.getLabelForInput(key);
+                    formattedData[questionLabel] = data[key]; // Assign label instead of raw key
+                });
+            }
     
             // Generate panel for each step
             new PanelObj({
@@ -651,7 +694,8 @@ class PanelObj {
 
     formatKey(key) {
         return key
-            .replace(/([A-Z])/g, " $1") // Convert camelCase to spaced words
+            .replace(/([A-Z]{2,})/g, match => match) // Keep acronyms like SIN intact
+            .replace(/([a-z])([A-Z])/g, "$1 $2") // Insert spaces only between camelCase words
             .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
             .trim();
     }
@@ -947,62 +991,71 @@ class ProgressiveDisclosure {
         }
     }
 
+
     hideOtherTargets(input) {
-        const groupName = input.name;
-    
-        if (groupName) {
-            // Get all inputs in the same group with the same name
-            const groupInputs = document.querySelectorAll(`input[name="${groupName}"]`);
-    
-            groupInputs.forEach(groupInput => {
-                const otherTargets = groupInput.getAttribute('data-toggle');
-                if (otherTargets) {
-                    const targetIds = otherTargets.split(',').map(id => id.trim());
-                    targetIds.forEach(targetId => {
-                        const targetElement = document.getElementById(targetId);
-                        if (targetElement) {
-                            // Hide the element
-                            targetElement.classList.add('hidden');
-    
-                            // Clear all input fields inside the hidden target
-                            const inputs = targetElement.querySelectorAll('input, select, textarea');
-                            inputs.forEach(input => {
-                                if (input.type === 'radio' || input.type === 'checkbox') {
-                                    input.checked = false;
-                                } else {
-                                    input.value = '';
-                                }
-                            });
-    
-                            // Recursively clear any nested data toggles
-                            const nestedToggles = targetElement.querySelectorAll('[data-toggle]');
-                            nestedToggles.forEach(nestedToggle => {
-                                const nestedTargets = nestedToggle.getAttribute('data-toggle');
-                                if (nestedTargets) {
-                                    nestedTargets.split(',').forEach(nestedTargetId => {
-                                        const nestedTargetElement = document.getElementById(nestedTargetId.trim());
-                                        if (nestedTargetElement) {
-                                            nestedTargetElement.classList.add('hidden');
-                                            const nestedInputs = nestedTargetElement.querySelectorAll('input, select, textarea');
-                                            nestedInputs.forEach(nestedInput => {
-                                                if (nestedInput.type === 'radio' || nestedInput.type === 'checkbox') {
-                                                    nestedInput.checked = false;
-                                                } else {
-                                                    nestedInput.value = '';
-                                                }
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    });
+    const groupName = input.name;
+
+    if (groupName) {
+        const groupInputs = document.querySelectorAll(`input[name="${groupName}"]`);
+
+        groupInputs.forEach(groupInput => {
+            const otherTargets = groupInput.getAttribute('data-toggle');
+
+            if (otherTargets) {
+                const targetIds = otherTargets.split(',').map(id => id.trim());
+
+                targetIds.forEach(targetId => {
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        this.hideWithSubfields(targetElement);
+                    }
+                });
+            }
+        });
+
+        // ✅ NEW: Hide all subsequent fieldsets if the current input triggers an out
+        const parentFieldset = input.closest("fieldset");
+        if (parentFieldset && parentFieldset.classList.contains("hidden")) {
+            let nextFieldset = parentFieldset.nextElementSibling;
+            while (nextFieldset) {
+                if (nextFieldset.tagName === "FIELDSET") {
+                    this.hideWithSubfields(nextFieldset);
+                }
+                nextFieldset = nextFieldset.nextElementSibling;
+            }
+        }
+    }
+}
+
+// ✅ NEW: Function to hide a field and clear inputs inside it
+hideWithSubfields(element) {
+    element.classList.add("hidden");
+
+    // Clear all inputs inside the hidden element
+    const inputs = element.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        if (input.type === 'radio' || input.type === 'checkbox') {
+            input.checked = false;
+        } else {
+            input.value = '';
+        }
+    });
+
+    // Recursively hide any nested fields inside this element
+    const nestedToggles = element.querySelectorAll('[data-toggle]');
+    nestedToggles.forEach(nestedToggle => {
+        const nestedTargets = nestedToggle.getAttribute('data-toggle');
+        if (nestedTargets) {
+            nestedTargets.split(',').forEach(nestedTargetId => {
+                const nestedTargetElement = document.getElementById(nestedTargetId.trim());
+                if (nestedTargetElement) {
+                    this.hideWithSubfields(nestedTargetElement);
                 }
             });
         }
-    }
+    });
+}
 
-    
     outCheck (){
         let selectedInputs = Array.from(document.querySelectorAll('input:checked')).map(input => input.id);
     
@@ -1018,19 +1071,21 @@ class ProgressiveDisclosure {
 
         const nextBtn = activeStep.querySelector('.next-button');
         const backBtn = activeStep.querySelector('.back-button');
+        const outBtn = activeStep.querySelector('.out-button');
 
-        if (!nextBtn) return; // If no next button is found, exit
+        if (!outBtn) return; // If no next button is found, exit
 
         if (isOut) {
-            nextBtn.textContent = "Return to Overview";
-            nextBtn.classList.add("out-button");
-            nextBtn.onclick = () => window.location.href = "chooser.html";
-            backBtn.style.display = "none";
+            nextBtn.classList.add("hidden");
+            backBtn.classList.add("hidden");
+
+            outBtn.classList.remove("hidden");
+           
         } else {
-            nextBtn.textContent = "Next";
-            nextBtn.classList.remove("out-button");
-            nextBtn.onclick = () => this.stepper.navigateStep("next");
-            backBtn.style.display = "inline-block";
+            nextBtn.classList.remove("hidden");
+            backBtn.classList.remove("hidden");
+
+            outBtn.classList.add("hidden");
         }
     }
     
