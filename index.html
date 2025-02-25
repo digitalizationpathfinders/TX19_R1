@@ -61,6 +61,7 @@
                                 <div class="line"></div>
                             </div>
                             <div class="alert-content">
+                                <h5>Important information</h5>
                                 This deceased individual certificate covers income earned up to the date of death. If you require an estate trust final clearance, you must also file a clearance certificate through My Trust Account within Represent a Client.
                             </div>
                         </div>
@@ -82,7 +83,7 @@
                                 <li>A list of the names, addresses, and tax identification numbers, such as social insurance numbers, of any beneficiaries of property other than cash</li>
                             </ul>
                             <br>
-                            <p>If documents related to this request were submitted previously, you will be required to provide the reference number and/or confirmation number.</p>
+                            <p>If documents related to this request were submitted previously, you will be required to provide the case/reference number.</p>
                         </div>
                         <button class="btn btn-primary next-button" type="button">Begin</button>
                     </div>
@@ -99,9 +100,14 @@
                 <div class="step-content">
                     <div class="container">
                         <form id="step-1-form">
-                            <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div>
+                            <div class="required">Fields marked with asterisk (<span class="ast">*</span>) are required.</div><br>
+                            <div>
+                                A deceased individual type of clearance certificate covers income earned up to the date of death.
+                            </div>
                             <fieldset id="s1q1-fieldset" data-radio-group>
-                                <legend class="required-label"> Have all the required tax returns been filed?</legend>
+                                <legend class="required-label"> Have all the required tax returns been filed?<a data-toggleLB="s1q1-lightbox"><span class="material-icons">
+                                    help
+                                    </span></a></legend>
                                 <div class="group">
                                     <input type="radio" id="s1q1-op1" name="s1q1" value="Yes" data-toggle="s1q2-fieldset">
                                     <label for="s1q1-op1"></label>
@@ -173,7 +179,7 @@
                                 </div>
                             </fieldset>
                             <fieldset id="s1q4-fieldset" class="hidden" data-radio-group>
-                                <legend class="required-label"> Are there currently any outstanding requests with the CRA (for example, an adjustment, appeal, objection, taxpayer relief, etc.)?</legend>
+                                <legend class="required-label"> Are there currently any outstanding requests with the CRA (for example, an adjustment, objection, taxpayer relief, etc.)?</legend>
                                 <div class="group">
                                     <input type="radio" id="s1q4-op1" name="s1q4" value="Yes" data-toggle="alert-outstandingcase">
                                     <label for="s1q4-op1"></label>
@@ -201,6 +207,21 @@
                             <button class="btn btn-primary next-button" type="button">Next</button>
                             <button class="hidden btn btn-primary out-button" type="button" onclick="location.href='chooser.html'">Return to Overview</button>
                         </form>
+                        <div class="lightbox-container" id="s1q1-lightbox">
+                            <div class="lightbox">
+                                <div class="header"><span class="material-icons">help</span>
+                                    <h3>Have all the required tax returns been filed?</h3>
+                                    <button data-closebtn class="btn-tertiary" type="button">
+                                    <span class="material-icons">clear</span></button>
+                                </div>
+                                <div class="lightbox-content">
+                                    Placeholder text here
+                                </div>
+                                <div class="buttons">
+                                    <button class="btn-tertiary-brdr" data-closebtn type="button">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

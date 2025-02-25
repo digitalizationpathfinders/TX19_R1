@@ -301,6 +301,12 @@ button span {
   color:rgb(5,3,210);
   background-color:#f4f4f5;
 }
+.btn-tertiary-brdr {
+  background-color:transparent ;
+  border:1px solid #8d8d8d;
+  color:#091c2d;
+}
+
 
 .close {
   border:1px solid #989DA6 !important;
@@ -491,11 +497,17 @@ padding:8px;
   display:flex;
   justify-content:space-between;
   align-items: center;
+  padding:8px 16px;
 
 }
-.lightbox .header h3, .lightbox span {
-  padding:8px 16px;
+.lightbox h3 {
+  font-size:22px;
 }
+.lightbox .header span {
+  padding-right:8px !important; 
+  font-size:20px;
+}
+
 .lightbox .header span {
   color:#26374A;
   font-weight: bold;
@@ -512,7 +524,7 @@ padding:8px;
 .lightbox .buttons {
   border-top:1px none; /*solid #989DA6;*/
   padding:16px;
-  padding-left:34px !important;
+  /* padding-left:34px !important; */
 }
 
 .file-upload .lightbox{
@@ -536,6 +548,12 @@ padding:8px;
 
 .required-label, .optional-label {
   padding-top:12px;
+  /* display:flex; */
+}
+
+.required-label span {
+  font-size:16pt;
+  align-self: center;
 }
 
 .optional {

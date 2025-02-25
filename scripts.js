@@ -142,6 +142,9 @@ class Stepper {
     customStepCode(stepNum){
         if (!this.stepHandlers[stepNum]) {
             switch (stepNum) {
+                case 1:
+                    this.stepHandlers[stepNum] = new Step1Handler(); 
+                    break;
                 case 2:
                     this.stepHandlers[stepNum] = new Step2Handler(); 
                     break;
@@ -158,7 +161,11 @@ class Stepper {
         }
     }
 }
-
+class Step1Handler {
+    constructor(){
+        this.q1Lightbox = new FormLightbox(document.getElementById("s1q1-lightbox"));
+    }
+}
 class Step2Handler {
     constructor(){
         this.deceasedtpPanelContainer = document.getElementById("deceasedinfo-panel-container");
@@ -601,8 +608,6 @@ class Step6Handler {
     
 }
 
-
-
 class PanelObj {
     constructor({ container, title, data, editButton = false, editIndex = null, deleteButton = false, reviewPanel = false, labels = null, subTable = null }) {
         this.container = container; // The DOM element where the panel should be appended
@@ -718,7 +723,6 @@ class PanelObj {
     }
     
 }
-
 
 class TableObj {
     constructor (tableID) {
@@ -845,9 +849,11 @@ class FormLightbox {
                 this.openLightbox();
                 this.clearFormData();
             });
-            var buttonText = document.createTextNode(this.openTrigger.value);
+            if(this.openTrigger.value){
+                var buttonText = document.createTextNode(this.openTrigger.value);
+                this.openTrigger.appendChild(buttonText)
+            }
             
-            this.openTrigger.appendChild(buttonText)
         }
         this.initializeEventListeners();
     }
