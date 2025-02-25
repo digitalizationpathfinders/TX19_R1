@@ -246,11 +246,11 @@ class Step3Handler {
         }
 
         const newRepresentative = {
-            name: formData["s3-repname"] || " ",
+            name: formData["s3-repname"] || null,
             address: address,
-            phone: formData["s3-reptel1"] || " ",
-            altPhone: formData["s3-reptel2"] || " ",
-            role: formData["s3-reprole"] || " "
+            phone: formData["s3-reptel1"] || null,
+            altPhone: formData["s3-reptel2"] || null,
+            role: formData["s3-reprole"] || null
         };
 
         if (editIndex !== null) {
@@ -276,66 +276,78 @@ class Step3Handler {
     updateRepresentativePanels() {
         this.repPanelContainer.innerHTML = "";
         this.mailRecipContainer.innerHTML = ""; 
-       
-        if (this.legalRep) {
-            // State 3: Level 3 User (Legal Rep on File) - Show Name & Address only, but keep fieldset visible
-            if (this.userLevel === 3) {
-                this.warningAlert.classList.add("hidden");
-                this.infoAlert.classList.remove("hidden");
-                this.legalRepInfoFieldset.classList.remove("hidden"); // Show fieldset for phone + role collection
-                this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
-                this.lightboxHeader.innerHTML = "Add additional mail recipient";
-                this.lightboxButton.innerHTML = "Add additional mail recipient";
-     
-                new PanelObj({
-                    container: this.repPanelContainer,
-                    title: "Legal representative",
-                    data: this.legalRep,
-                    editButton: false, 
-                    editIndex: "legalRep",
-                    deleteButton: false,
-                    reviewPanel: false,
-                    labels: ["Name", "Mailing address"]
-                });
-            } 
-            // State 2: Level 2 User (Legal Rep Just Added) - Show all fields, hide fieldset
-            else {
-                this.warningAlert.classList.add("hidden");
-                this.infoAlert.classList.remove("hidden");
-                this.legalRepInfoFieldset.classList.add("hidden"); // Hide fieldset
-                this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
-                this.lightboxHeader.innerHTML = "Add additional mail recipient";
-                this.lightboxButton.innerHTML = "Add additional mail recipient";
-        
-                new PanelObj({
-                    container: this.repPanelContainer,
-                    title: "Legal representative",
-                    data: this.legalRep,
-                    editButton: true, 
-                    editIndex: "legalRep",
-                    deleteButton: true,
-                    reviewPanel: false,
-                    labels: ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"]
-                });
-            }
-        } else {
-            // State 1: No Legal Rep - Show warning, hide info banner, set button for adding legal rep
-            this.warningAlert.classList.remove("hidden");
-            this.infoAlert.classList.add("hidden");
-            this.legalRepInfoFieldset.classList.add("hidden");
-            this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add legal representative information`;
-        }
+        console.log(this.legalRep)
 
+        if (this.legalRep) {
+            this.showLegalRepView();
+            this.createPanel({
+                container: this.repPanelContainer,
+                title: "Legal representative",
+                data: this.legalRep,
+                editButton: this.userLevel !== 3, 
+                editIndex: "legalRep",
+                deleteButton: this.userLevel !== 3,
+                reviewPanel: false,
+                labels: this.getLegalRepLabels()
+            });
+
+        }
+        else {
+          this.showNoLegalRepView();
+            
+        }
+      
         this.mailRecipients.forEach((recipient, index) => {
-            new PanelObj({
+            this.createPanel({
                 container: this.mailRecipContainer,
                 title: `Mail recipient ${index + 1}`,
                 data: recipient,
                 editButton: true, 
                 editIndex: index,
                 deleteButton: true,
-                labels: ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"]
-            })
+                labels: this.getMailRecipientLabels(recipient)
+            });
+        });
+    }
+
+    showLegalRepView(){
+        this.warningAlert.classList.add("hidden");
+        this.infoAlert.classList.remove("hidden");
+        this.legalRepInfoFieldset.classList.toggle("hidden", this.userLevel !== 3);
+        this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add additional mail recipient`;
+        this.lightboxHeader.innerHTML = "Add additional mail recipient";
+        this.lightboxButton.innerHTML = "Add additional mail recipient";
+    }
+    showNoLegalRepView(){
+        this.warningAlert.classList.remove("hidden");
+        this.infoAlert.classList.add("hidden");
+        this.legalRepInfoFieldset.classList.add("hidden");
+        this.addRepButton.innerHTML = `<span class="material-icons">add</span> Add legal representative information`;
+    
+    }
+    getLegalRepLabels() {
+        if (this.userLevel === 3) {
+            return ["Name", "Mailing address"];
+        }
+    
+        let labels = ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"];
+        return labels;
+    }
+    getMailRecipientLabels(recipient) {
+        let labels = ["Name", "Mailing address", "Telephone number", "Alternate telephone number", "Role"];
+        return labels;
+    }
+
+    createPanel({ container, title, data, editButton, editIndex, deleteButton, reviewPanel, labels }) {
+        new PanelObj({
+            container,
+            title,
+            data,
+            editButton,
+            editIndex,
+            deleteButton,
+            reviewPanel,
+            labels
         });
     }
     
@@ -539,7 +551,9 @@ class Step6Handler {
                     formattedData[`Mail Recipient ${index + 1} Name`] = recipient.name || "N/A";
                     formattedData[`Mail Recipient ${index + 1} Mailing Address`] = recipient.address || "N/A";
                     formattedData[`Mail Recipient ${index + 1} Telephone Number`] = recipient.phone || "N/A";
-                    formattedData[`Mail Recipient ${index + 1} Alternate Telephone Number`] = recipient.altPhone || "N/A";
+                    if (recipient.altPhone && recipient.altPhone.trim() !== "") {
+                        formattedData[`Mail Recipient ${index + 1} Alternate Telephone Number`] = recipient.altPhone;
+                    }
                 });
         
             
@@ -636,8 +650,11 @@ class PanelObj {
         // Generate table rows for main data
         let tableRows = Object.entries(this.data)
             .map(([key, value], index) => {
-                let label = this.labels && this.labels[index] ? this.labels[index] : this.formatKey(key);
-                return `<tr><td class="label">${label}</td><td>${value || "N/A"}</td></tr>`;
+                if(value) {
+                    let label = this.labels && this.labels[index] ? this.labels[index] : this.formatKey(key);
+                    return `<tr><td class="label">${label}</td><td>${value}</td></tr>`;
+                }
+               
             })
             .join("");
 
