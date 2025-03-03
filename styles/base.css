@@ -499,6 +499,11 @@ padding:8px;
   justify-content:space-between;
   align-items: center;
   padding:8px 16px;
+}
+
+.lightbox .header div:first-of-type {
+  display: flex;
+  align-items: center;
 
 }
 .lightbox h3 {
