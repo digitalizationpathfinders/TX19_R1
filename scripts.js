@@ -55,8 +55,16 @@ class Stepper {
     styleStepNumber(element, index, isActive, isCompleted) {
         element.style.backgroundColor = isActive || isCompleted ? "#26374A" : "#6F6F6F";
         element.style.color = "#FFFFFF";
-        element.innerHTML = isCompleted ? `<span class="material-icons">check</span>` : index + 1;
+    
+        if (index === 0 && !isCompleted) {
+            // First step gets the 'info' icon
+            element.innerHTML = `<strong>i</strong>`;
+        } else {
+            // Other steps display their number
+            element.innerHTML = isCompleted ? `<span class="material-icons">check</span>` : `${index}`;
+        }
     }
+    
     
 
     observeStepContentChanges() {
